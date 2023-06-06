@@ -3,15 +3,25 @@ package com.sapiofan.cards.entities;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Collection extends CollectionObject {
+public class Collection {
+    private int id;
     private String name;
     private List<Card> cards;
-    private Collection parent;
+    private int parent;
 
-    public Collection(String name, Collection parent) {
+    public Collection(int id, String name, int parent) {
+        this.id = id;
         this.name = name;
         this.cards = new ArrayList<>();
         this.parent = parent;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -30,17 +40,17 @@ public class Collection extends CollectionObject {
         this.cards = cards;
     }
 
-    public Collection getParent() {
+    public int getParent() {
         return parent;
     }
 
-    public void setParent(Collection parent) {
+    public void setParent(int parent) {
         this.parent = parent;
     }
 
     @Override
     public String toString() {
         return "Collection:\n name: " + name + "\ncards:" + cards
-                + "\nparent: " + (parent == null ? "Root" : parent.getName());
+                + "\nparent: " + (parent == 0 ? "Root" : parent);
     }
 }
