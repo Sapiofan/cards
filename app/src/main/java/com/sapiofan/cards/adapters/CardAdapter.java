@@ -19,9 +19,11 @@ import java.util.List;
 
 public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     private List<Card> cardList;
+    private List<Card> filteredCardList;
 
     public CardAdapter(List<Card> cardList) {
         this.cardList = cardList;
+        this.filteredCardList = cardList;
     }
 
     @NonNull
@@ -95,5 +97,23 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
             flipOut.start();
         }
+    }
+
+    public void filter(String query) {
+        query = query.toLowerCase().trim(); // Convert query to lowercase and remove leading/trailing spaces
+
+        filteredCardList.clear(); // Clear previous filtered cards
+
+        if (query.isEmpty()) {
+            filteredCardList.addAll(cardList); // If query is empty, show all cards
+        } else {
+            for (Card card : cardList) {
+                if (card.getText().toLowerCase().contains(query)) {
+                    filteredCardList.add(card); // Add card to filteredCardList if its text contains the query
+                }
+            }
+        }
+
+        notifyDataSetChanged(); // Notify adapter about the data change
     }
 }

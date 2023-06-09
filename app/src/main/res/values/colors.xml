@@ -8,9 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="cards_dark_blue">#006ba6</color>
-    <color name="cards_light_blue">#0496ff</color>
-    <color name="cards_yellow">#ffbc42</color>
+    <color name="cards_dark_blue">#080B0C</color>
+    <color name="cards_light_blue">#242C31</color>
+    <color name="cards_yellow">#AE7309</color>
     <color name="cards_pink">#d81159</color>
     <color name="cards_purple">#8f2d56</color>
 </resources>

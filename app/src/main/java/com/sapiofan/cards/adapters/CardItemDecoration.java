@@ -9,7 +9,7 @@ public class CardItemDecoration extends RecyclerView.ItemDecoration {
     private final int spacing;
 
     public CardItemDecoration() {
-        spacing = 16; // Set the desired spacing between the cards in pixels
+        spacing = 48; // Set the desired spacing between the cards in pixels
     }
 
     @Override

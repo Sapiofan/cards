@@ -5,6 +5,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 
 import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
@@ -30,13 +33,34 @@ public class MainActivity extends AppCompatActivity {
 
         CardAdapter cardAdapter = new CardAdapter(cardList);
         recyclerView.setAdapter(cardAdapter);
+
+        EditText searchEditText = findViewById(R.id.searchEditText);
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Not used
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Filter cards as the user types
+                String query = charSequence.toString();
+                cardAdapter.filter(query);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Not used
+            }
+        });
     }
 
     private List<Card> getCardList() {
         // Retrieve the list of cards from your data source or API call
         // For demonstration purposes, let's create a dummy list
         List<Card> cards = new ArrayList<>();
-        cards.add(new Card(1, "Card 1", "Translation 1", new Date(), 1, 0));
+        cards.add(new Card(1, "Card 1", "Translation 1 Translation 1Translation 1Translation 1Translation 1Translation 1Translation 1Translation 1Translation 1", new Date(), 1, 0));
         cards.add(new Card(2, "Card 2", "Translation 2", new Date(), 1, 0));
         cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
         cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
