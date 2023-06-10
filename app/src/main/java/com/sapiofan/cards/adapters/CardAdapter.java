@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sapiofan.cards.R;
 import com.sapiofan.cards.entities.Card;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
@@ -23,7 +24,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
     public CardAdapter(List<Card> cardList) {
         this.cardList = cardList;
-        this.filteredCardList = cardList;
+        this.filteredCardList = new ArrayList<>(cardList);
     }
 
     @NonNull
@@ -35,7 +36,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Card card = cardList.get(position);
+        Card card = filteredCardList.get(position);
         holder.textViewFront.setText(card.getText());
         holder.textViewBack.setText(card.getTranslation());
 
@@ -50,7 +51,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return cardList.size();
+        return filteredCardList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

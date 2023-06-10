@@ -6,12 +6,14 @@ import java.util.List;
 public class Collection {
     private int id;
     private String name;
+    private boolean inStudy;
     private List<Card> cards;
     private int parent;
 
-    public Collection(int id, String name, int parent) {
+    public Collection(int id, String name, boolean inStudy, int parent) {
         this.id = id;
         this.name = name;
+        this.inStudy = inStudy;
         this.cards = new ArrayList<>();
         this.parent = parent;
     }
@@ -30,6 +32,14 @@ public class Collection {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isInStudy() {
+        return inStudy;
+    }
+
+    public void setInStudy(boolean inStudy) {
+        this.inStudy = inStudy;
     }
 
     public List<Card> getCards() {

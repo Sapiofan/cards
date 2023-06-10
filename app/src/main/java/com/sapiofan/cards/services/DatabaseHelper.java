@@ -47,9 +47,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String insertQuery;
         if (parent == 0) {
-            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent) VALUES ('" + name + "', NULL)";
+            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study) VALUES ('" + name + "', NULL, 1)";
         } else {
-            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent) VALUES ('" + name + "', " + parent + ")";
+            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study) VALUES ('" + name + "', " + parent + ", 1)";
         }
         db.execSQL(insertQuery);
         db.close();
@@ -94,10 +94,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 // Assuming your object has name and age properties
                 String name = cursor.getString(cursor.getColumnIndex("name"));
+                boolean inStudy = cursor.getInt(cursor.getColumnIndex("in_study")) > 0;
                 int id = cursor.getInt(cursor.getColumnIndex("id"));
 
                 // Create and add the object to the list
-                objects.add(new Collection(id, name, parent_id));
+                objects.add(new Collection(id, name, inStudy, parent_id));
             } while (cursor.moveToNext());
         }
 
