@@ -1,9 +1,5 @@
 package com.sapiofan.cards;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,6 +8,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
@@ -60,21 +60,29 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ImageButton studying = findViewById(R.id.studyId);
-        View.OnClickListener handler = new View.OnClickListener(){
-
-            public void onClick(View v) {
-
-                if(v==studying){
-                    // doStuff
-                    Intent intentMain = new Intent(MainActivity.this,
-                            StudyingActivity.class);
-                    MainActivity.this.startActivity(intentMain);
-                    Log.i("Content "," Main layout");
-                }
+        View.OnClickListener handler = v -> {
+            if (v == studying) {
+                Intent intentMain = new Intent(MainActivity.this,
+                        StudyingActivity.class);
+                MainActivity.this.startActivity(intentMain);
+                Log.i("Content ", " Main layout");
             }
         };
 
         studying.setOnClickListener(handler);
+
+        ImageButton settings = findViewById(R.id.settingsId);
+
+        View.OnClickListener settingsHandler = v -> {
+            if (v == settings) {
+                Intent intentMain = new Intent(MainActivity.this,
+                        SettingsActivity.class);
+                MainActivity.this.startActivity(intentMain);
+                Log.i("Content ", " Main layout");
+            }
+        };
+
+        settings.setOnClickListener(settingsHandler);
     }
 
     private List<Card> getCardList() {
