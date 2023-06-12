@@ -44,7 +44,7 @@
 
             <!-- Collections -->
             <ImageButton
-                android:id="@+id/studyId"
+                android:id="@+id/collectionId"
                 android:layout_width="0dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"
@@ -53,7 +53,7 @@
 
             <!-- Studying -->
             <ImageButton
-                android:id="@+id/collectionId"
+                android:id="@+id/studyId"
                 android:layout_width="0dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"
@@ -62,7 +62,7 @@
 
             <!-- Settings -->
             <ImageButton
-                android:id="@+id/additionalId"
+                android:id="@+id/settingsId"
                 android:layout_width="0dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"

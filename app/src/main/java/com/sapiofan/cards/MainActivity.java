@@ -4,10 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
@@ -54,6 +58,23 @@ public class MainActivity extends AppCompatActivity {
                 // Not used
             }
         });
+
+        ImageButton studying = findViewById(R.id.studyId);
+        View.OnClickListener handler = new View.OnClickListener(){
+
+            public void onClick(View v) {
+
+                if(v==studying){
+                    // doStuff
+                    Intent intentMain = new Intent(MainActivity.this,
+                            StudyingActivity.class);
+                    MainActivity.this.startActivity(intentMain);
+                    Log.i("Content "," Main layout");
+                }
+            }
+        };
+
+        studying.setOnClickListener(handler);
     }
 
     private List<Card> getCardList() {
