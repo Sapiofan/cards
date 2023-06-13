@@ -2,10 +2,12 @@ package com.sapiofan.cards.services;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.sapiofan.cards.entities.Card;
+import com.sapiofan.cards.entities.CardWord;
 import com.sapiofan.cards.entities.Collection;
 
 import java.text.SimpleDateFormat;
@@ -20,6 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "cards.db";
     private static final String COLLECTIONS = "collections";
     private static final String CARDS = "cards";
+    private static final String WORDS_CHARACTERISTICS = "words";
 
     // Constructor
     public DatabaseHelper(Context context) {
@@ -35,6 +38,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         createTableQuery = "CREATE TABLE IF NOT EXISTS " + CARDS +
                 " (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)";
         db.execSQL(createTableQuery);
+
+        createTableQuery = "CREATE TABLE IF NOT EXISTS " + WORDS_CHARACTERISTICS +
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT, size INTEGER)";
+        db.execSQL(createTableQuery);
+        addDefaultWordSize(db);
+    }
+
+    private void addDefaultWordSize(SQLiteDatabase db) {
+        if (DatabaseUtils.queryNumEntries(db, WORDS_CHARACTERISTICS) < 1) {
+            String query = "INSERT INTO " + WORDS_CHARACTERISTICS + " (size) VALUES (" + 18 + ")";
+            db.execSQL(query);
+        }
     }
 
     @Override
@@ -216,5 +231,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void moveObjectsToOtherCollection(List<Integer> ids) {
 
+    }
+
+    public CardWord getWordsSize() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + WORDS_CHARACTERISTICS + " WHERE id = 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        int size = cursor.getInt(cursor.getColumnIndex("size"));
+
+        return new CardWord(size);
+    }
+
+    public void updateWordsSize(CardWord cardWord) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + WORDS_CHARACTERISTICS + " SET size = '" + cardWord.getSize() + "' WHERE id = 1";
+        db.execSQL(query);
     }
 }

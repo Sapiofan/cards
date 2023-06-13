@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE resources [
-    <!ENTITY font_size "18">
-    ]>
 <resources>
     <string name="app_name">cards</string>
-    <string name="font_size_card">&font_size;sp</string>
 </resources>

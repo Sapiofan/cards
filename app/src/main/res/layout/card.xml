@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:background="@drawable/card_front_background"
         android:gravity="center"
-        android:textSize="18sp"
         android:textColor="@android:color/white"
+        android:text="Front Text"
         />
 
     <TextView
@@ -27,9 +27,9 @@
         android:layout_height="wrap_content"
         android:background="@drawable/card_back_background"
         android:gravity="center"
-        android:textSize="18sp"
         android:textColor="@android:color/white"
         android:visibility="gone"
+        android:text="Back Text"
         />
 
 </LinearLayout>

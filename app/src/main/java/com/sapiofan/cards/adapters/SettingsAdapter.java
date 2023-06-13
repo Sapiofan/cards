@@ -1,5 +1,7 @@
 package com.sapiofan.cards.adapters;
 
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.R;
+import com.sapiofan.cards.SettingsActivity;
+import com.sapiofan.cards.SizeActivity;
+import com.sapiofan.cards.StudyingActivity;
 
 import java.util.List;
 
@@ -44,10 +49,14 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Button
             super(itemView);
             button = itemView.findViewById(R.id.button);
 
-//            itemView.setOnClickListener(v -> {
-//                int position = getAdapterPosition();
-//
-//            });
+            button.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (settingsList.get(position).equals("Font Size")) {
+                    Intent intent = new Intent(itemView.getContext(), SizeActivity.class);
+                    itemView.getContext().startActivity(intent);
+                    Log.i("Content ", " Setting layout");
+                }
+            });
         }
     }
 }

@@ -3,6 +3,7 @@ package com.sapiofan.cards.adapters;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.R;
 import com.sapiofan.cards.entities.Card;
+import com.sapiofan.cards.entities.CardWord;
+import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +24,12 @@ import java.util.List;
 public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     private List<Card> cardList;
     private List<Card> filteredCardList;
+    private CardWord cardWord;
 
-    public CardAdapter(List<Card> cardList) {
+    public CardAdapter(List<Card> cardList, CardWord cardWord) {
         this.cardList = cardList;
         this.filteredCardList = new ArrayList<>(cardList);
+        this.cardWord = cardWord;
     }
 
     @NonNull
@@ -38,7 +43,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Card card = filteredCardList.get(position);
         holder.textViewFront.setText(card.getText());
+        holder.textViewFront.setTextSize(TypedValue.COMPLEX_UNIT_PX, cardWord.getSize());
         holder.textViewBack.setText(card.getTranslation());
+        holder.textViewBack.setTextSize(TypedValue.COMPLEX_UNIT_PX, cardWord.getSize());
 
         if (card.isFlipped()) {
             holder.textViewFront.setVisibility(View.GONE);

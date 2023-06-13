@@ -10,19 +10,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Menu buttons -->
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progressDrawable="@drawable/slider_progress"
+            android:thumb="@drawable/slider_thumb"
+            app:layout_constraintBottom_toTopOf="@+id/buttonLayout"
+            android:layout_marginBottom="150dp"/>
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="354dp"
-            android:layout_height="52dp"
-            android:gravity="center"
+        <include
+            android:id="@+id/card"
+            layout="@layout/card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@+id/buttonLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent" />
 
-        </androidx.cardview.widget.CardView>
-
+        <!-- Menu buttons -->
         <LinearLayout
             android:id="@+id/buttonLayout"
             android:layout_width="match_parent"
@@ -32,7 +39,7 @@
 
             <!-- Collections -->
             <ImageButton
-                android:id="@+id/studyId"
+                android:id="@+id/collectionId"
                 android:layout_width="0dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"
@@ -41,7 +48,7 @@
 
             <!-- Studying -->
             <ImageButton
-                android:id="@+id/collectionId"
+                android:id="@+id/studyId"
                 android:layout_width="0dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"
@@ -50,7 +57,7 @@
 
             <!-- Settings -->
             <ImageButton
-                android:id="@+id/additionalId"
+                android:id="@+id/settingsId"
                 android:layout_width="0dp"
                 android:layout_height="55dp"
                 android:layout_weight="1"
@@ -58,5 +65,16 @@
                 android:src="@drawable/folder" />
 
         </LinearLayout>
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Default size"
+            app:layout_constraintBottom_toTopOf="@+id/buttonLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seekBar"
+            android:backgroundTint="@color/cards_purple" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,9 +1,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -61,43 +63,15 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Card -->
-    <LinearLayout
+    <include
         android:id="@+id/card"
+        layout="@layout/card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/card_background"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
+        app:layout_constraintBottom_toTopOf="@+id/buttonsContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/textViewFront"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/card_front_background"
-            android:gravity="center"
-            android:minHeight="50dp"
-            android:text="Front Text"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/textViewBack"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/card_back_background"
-            android:gravity="center"
-            android:minHeight="50dp"
-            android:text="Back Text"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:visibility="gone" />
-
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
 
     <LinearLayout
         android:id="@+id/buttonsContainer"

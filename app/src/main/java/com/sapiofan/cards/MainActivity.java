@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
 import com.sapiofan.cards.entities.Card;
+import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+
         // Assuming you have retrieved the list of cards
         List<Card> cardList = getCardList();
 
@@ -35,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new CardItemDecoration());
 
-        CardAdapter cardAdapter = new CardAdapter(cardList);
+        CardAdapter cardAdapter = new CardAdapter(cardList, databaseHelper.getWordsSize());
         recyclerView.setAdapter(cardAdapter);
 
         EditText searchEditText = findViewById(R.id.searchEditText);

@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
 import com.sapiofan.cards.entities.Card;
+import com.sapiofan.cards.entities.CardWord;
+import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,6 +50,9 @@ public class StudyingActivity extends AppCompatActivity {
         setContentView(R.layout.studying);
 
         // Initialize views
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        CardWord cardWord = databaseHelper.getWordsSize();
+
         progressBar = findViewById(R.id.progressBar);
         recalledCountTextView = findViewById(R.id.recalledCountTextView);
         totalCountTextView = findViewById(R.id.totalTextView);
@@ -55,6 +61,9 @@ public class StudyingActivity extends AppCompatActivity {
         textViewBack = findViewById(R.id.textViewBack);
         forgotButton = findViewById(R.id.forgotButton);
         rememberButton = findViewById(R.id.rememberButton);
+
+        textViewFront.setTextSize(TypedValue.COMPLEX_UNIT_PX, cardWord.getSize());
+        textViewBack.setTextSize(TypedValue.COMPLEX_UNIT_PX, cardWord.getSize());
 
         List<Card> cards = getCardList();
         int totalCount = cards.size();

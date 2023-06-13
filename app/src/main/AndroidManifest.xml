@@ -36,6 +36,12 @@
             android:windowSoftInputMode="adjustPan"
             android:exported="true">
         </activity>
+        <activity
+            android:name=".SizeActivity"
+            android:label="Settings"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>
