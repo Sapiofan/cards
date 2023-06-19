@@ -10,12 +10,16 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
+import com.sapiofan.cards.adapters.CollectionAdapter;
+import com.sapiofan.cards.adapters.CollectionDecoration;
 import com.sapiofan.cards.entities.Card;
+import com.sapiofan.cards.entities.Collection;
 import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
@@ -33,34 +37,53 @@ public class MainActivity extends AppCompatActivity {
 
         // Assuming you have retrieved the list of cards
         List<Card> cardList = getCardList();
+        List<Collection> collectionList = getCollectionList();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(new CardItemDecoration());
 
-        CardAdapter cardAdapter = new CardAdapter(cardList, databaseHelper.getWordsSize());
-        recyclerView.setAdapter(cardAdapter);
 
-        EditText searchEditText = findViewById(R.id.searchEditText);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        recyclerView.setLayoutManager(layoutManager);
 
-        searchEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Not used
-            }
+        CollectionAdapter collectionAdapter = new CollectionAdapter(collectionList);
+        recyclerView.setAdapter(collectionAdapter);
+        recyclerView.addItemDecoration(new CollectionDecoration());
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Filter cards as the user types
-                String query = charSequence.toString();
-                cardAdapter.filter(query);
-            }
+//        collectionAdapter.setOnItemClickListener(new CollectionAdapter.OnItemClickListener<Collection>() {
+//            @Override
+//            public void onItemClick(Collection collection) {
+//                // Create a new CardAdapter with the updated card list
+//                CardAdapter cardAdapter = new CardAdapter(getCardsForCollection(collection));
+//                recyclerView.setAdapter(cardAdapter);
+//            }
+//        });
 
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // Not used
-            }
-        });
+//        recyclerView.addItemDecoration(new CardItemDecoration());
+//
+//        CardAdapter cardAdapter = new CardAdapter(cardList, databaseHelper.getWordsSize());
+//        recyclerView.setAdapter(cardAdapter);
+//
+//        EditText searchEditText = findViewById(R.id.searchEditText);
+//
+//        searchEditText.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                // Not used
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                // Filter cards as the user types
+//                String query = charSequence.toString();
+//                cardAdapter.filter(query);
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//                // Not used
+//            }
+//        });
 
         ImageButton studying = findViewById(R.id.studyId);
         View.OnClickListener handler = v -> {
@@ -86,6 +109,21 @@ public class MainActivity extends AppCompatActivity {
         };
 
         settings.setOnClickListener(settingsHandler);
+    }
+
+    private List<Collection> getCollectionList() {
+        List<Collection> collectionList = new ArrayList<>();
+        collectionList.add(new Collection(1, "Collection 1Collection 1Collection 1", true, 0));
+        collectionList.add(new Collection(2, "Collection 2", true, 0));
+        collectionList.add(new Collection(3, "Collection 3", true, 0));
+        collectionList.add(new Collection(4, "Collection 4", true, 0));
+        collectionList.add(new Collection(5, "Collection 5", true, 0));
+        collectionList.add(new Collection(6, "Collection 6", true, 0));
+        collectionList.add(new Collection(7, "Collection 7", true, 0));
+        collectionList.add(new Collection(8, "Collection 8", true, 0));
+        collectionList.add(new Collection(9, "Collection 9", true, 0));
+
+        return collectionList;
     }
 
     private List<Card> getCardList() {
