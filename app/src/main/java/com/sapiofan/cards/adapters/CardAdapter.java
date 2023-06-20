@@ -124,4 +124,8 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         notifyDataSetChanged(); // Notify adapter about the data change
     }
+
+    public void setCards(List<Card> cards) {
+        this.cardList = cards;
+    }
 }

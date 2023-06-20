@@ -3,7 +3,9 @@ package com.sapiofan.cards.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,9 +17,11 @@ import java.util.List;
 
 public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.CollectionViewHolder> {
     private List<Collection> collectionList;
+    private OnCollectionClickListener onCollectionClickListener;
 
-    public CollectionAdapter(List<Collection> collectionList) {
+    public CollectionAdapter(List<Collection> collectionList, OnCollectionClickListener onCollectionClickListener) {
         this.collectionList = collectionList;
+        this.onCollectionClickListener = onCollectionClickListener;
     }
 
     @NonNull
@@ -41,15 +45,35 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
     public class CollectionViewHolder extends RecyclerView.ViewHolder {
         private TextView textViewName;
+        private ImageButton buttonHide;
 
         public CollectionViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewName = itemView.findViewById(R.id.textViewFront);
+            buttonHide = itemView.findViewById(R.id.buttonHide);
 
-            itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    Collection collection = collectionList.get(position);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        Collection collection = collectionList.get(position);
+                        if (onCollectionClickListener != null) {
+                            onCollectionClickListener.onCollectionClick(collection);
+                        }
+                    }
+                }
+            });
+
+            buttonHide.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        // Handle buttonHide click event
+                        // You can perform actions specific to the button click here
+                        buttonHide.setImageResource(R.drawable.sleeping);
+                    }
                 }
             });
         }
@@ -57,5 +81,13 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         public void bind(Collection collection) {
             textViewName.setText(collection.getName());
         }
+    }
+
+    public interface OnCollectionClickListener {
+        void onCollectionClick(Collection collection);
+    }
+
+    public interface OnButtonClickListener {
+        void onButtonClicked(Collection collection);
     }
 }
