@@ -29,42 +29,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Menu buttons -->
-        <LinearLayout
-            android:id="@+id/buttonLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <!-- Collections -->
-            <ImageButton
-                android:id="@+id/collectionId"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1"
-                android:contentDescription="collections"
-                android:src="@drawable/folder" />
-
-            <!-- Studying -->
-            <ImageButton
-                android:id="@+id/studyId"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1"
-                android:contentDescription="studying"
-                android:src="@drawable/folder" />
-
-            <!-- Settings -->
-            <ImageButton
-                android:id="@+id/settingsId"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1"
-                android:contentDescription="Settings"
-                android:src="@drawable/folder" />
-
-        </LinearLayout>
+        <include layout="@layout/footer"/>
 
         <Button
             android:id="@+id/button2"

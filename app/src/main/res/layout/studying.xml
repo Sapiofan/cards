@@ -1,6 +1,5 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -86,61 +85,26 @@
             android:id="@+id/forgotButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
+            android:layout_weight="1"
             android:text="Forgot" />
 
         <Button
             android:id="@+id/rememberButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
+            android:layout_weight="1"
             android:text="Remember" />
 
     </LinearLayout>
 
-    <!-- Menu buttons -->
-    <LinearLayout
-        android:id="@+id/buttonLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <!-- Collections -->
-        <ImageButton
-            android:id="@+id/collectionId"
-            android:layout_width="0dp"
-            android:layout_height="55dp"
-            android:layout_weight="1"
-            android:contentDescription="collections"
-            android:src="@drawable/folder" />
-
-        <!-- Studying -->
-        <ImageButton
-            android:id="@+id/studyId"
-            android:layout_width="0dp"
-            android:layout_height="55dp"
-            android:layout_weight="1"
-            android:contentDescription="studying"
-            android:src="@drawable/folder" />
-
-        <!-- Settings -->
-        <ImageButton
-            android:id="@+id/settingsId"
-            android:layout_width="0dp"
-            android:layout_height="55dp"
-            android:layout_weight="1"
-            android:contentDescription="Settings"
-            android:src="@drawable/folder" />
-
-    </LinearLayout>
+    <include layout="@layout/footer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

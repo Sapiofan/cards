@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:minHeight="50dp"
@@ -10,19 +10,7 @@
     android:background="@drawable/card_background">
 
     <Button
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
-<!--    <TextView-->
-<!--        android:id="@+id/textViewFront"-->
-<!--        android:minHeight="50dp"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="@drawable/card_front_background"-->
-<!--        android:gravity="center"-->
-<!--        android:textSize="18sp"-->
-<!--        android:textColor="@android:color/white"-->
-<!--        />-->
-</LinearLayout>
+</RelativeLayout>
