@@ -3,6 +3,7 @@ package com.sapiofan.cards;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -140,6 +141,20 @@ public class StudyingActivity extends AppCompatActivity {
         });
 
         flipOut.start();
+    }
+
+    public void footerCollectionsButtonClicked(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    public void footerStudyingButtonClicked(View view) {
+
+    }
+
+    public void footerSettingsButtonClicked(View view) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private List<Card> getCardList() {

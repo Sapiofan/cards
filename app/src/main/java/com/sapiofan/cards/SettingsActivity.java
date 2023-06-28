@@ -29,21 +29,20 @@ public class SettingsActivity extends AppCompatActivity {
 
         SettingsAdapter settingsAdapter = new SettingsAdapter(settings);
         recyclerView.setAdapter(settingsAdapter);
+    }
 
-        ImageButton studying = findViewById(R.id.studyId);
-        View.OnClickListener handler = new View.OnClickListener() {
+    public void footerCollectionsButtonClicked(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
 
-            public void onClick(View v) {
-                if (v == studying) {
-                    Intent intentMain = new Intent(SettingsActivity.this,
-                            StudyingActivity.class);
-                    SettingsActivity.this.startActivity(intentMain);
-                    Log.i("Content ", " Setting layout");
-                }
-            }
-        };
+    public void footerStudyingButtonClicked(View view) {
+        Intent intent = new Intent(this, StudyingActivity.class);
+        startActivity(intent);
+    }
 
-        studying.setOnClickListener(handler);
+    public void footerSettingsButtonClicked(View view) {
+
     }
 
     private List<String> getMenuOptions() {

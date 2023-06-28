@@ -12,16 +12,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.R;
 import com.sapiofan.cards.entities.Collection;
+import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.List;
 
 public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.CollectionViewHolder> {
     private List<Collection> collectionList;
     private OnCollectionClickListener onCollectionClickListener;
+    private DatabaseHelper databaseHelper;
+    private int currentCollection = 0;
 
-    public CollectionAdapter(List<Collection> collectionList, OnCollectionClickListener onCollectionClickListener) {
+    public CollectionAdapter(List<Collection> collectionList, OnCollectionClickListener onCollectionClickListener,
+                             DatabaseHelper databaseHelper) {
         this.collectionList = collectionList;
         this.onCollectionClickListener = onCollectionClickListener;
+        this.databaseHelper = databaseHelper;
     }
 
     @NonNull
@@ -35,12 +40,35 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     @Override
     public void onBindViewHolder(@NonNull CollectionViewHolder holder, int position) {
         Collection collection = collectionList.get(position);
-        holder.bind(collection);
+        if (collection != null) {
+            holder.bind(collection);
+        }
     }
 
     @Override
     public int getItemCount() {
         return collectionList.size();
+    }
+
+    public boolean addNewCollection(String collectionName, boolean for_cards) {
+        System.out.println(collectionName);
+        System.out.println(for_cards);
+        databaseHelper.addCollection(collectionName, currentCollection, for_cards);
+        Collection collection = databaseHelper.getCollectionByName(collectionName, currentCollection);
+        System.out.println(collection);
+        collectionList.add(collection);
+
+        notifyDataSetChanged();
+
+        return true;
+    }
+
+    public int getCurrentCollection() {
+        return currentCollection;
+    }
+
+    public void setCurrentCollection(int currentCollection) {
+        this.currentCollection = currentCollection;
     }
 
     public class CollectionViewHolder extends RecyclerView.ViewHolder {
@@ -70,8 +98,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 public void onClick(View view) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        // Handle buttonHide click event
-                        // You can perform actions specific to the button click here
                         buttonHide.setImageResource(R.drawable.sleeping);
                     }
                 }

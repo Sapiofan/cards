@@ -1,0 +1,35 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/inputField1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Input Field 1"
+        android:minHeight="48dp" />
+
+    <EditText
+        android:id="@+id/inputField2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/inputField1"
+        android:hint="Input Field 2"
+        android:minHeight="48dp" />
+
+    <Switch
+        android:id="@+id/switchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/inputField2"
+        android:minHeight="48dp"
+        android:text="Switch" />
+
+    <Button
+        android:id="@+id/saveCollectionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/switchButton"
+        android:text="Submit" />
+</RelativeLayout>

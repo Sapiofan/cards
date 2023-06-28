@@ -15,6 +15,7 @@
         android:layout_height="55dp"
         android:layout_weight="1"
         android:contentDescription="collections"
+        android:onClick="footerCollectionsButtonClicked"
         android:src="@drawable/folder" />
 
     <!-- Studying -->
@@ -24,6 +25,7 @@
         android:layout_height="55dp"
         android:layout_weight="1"
         android:contentDescription="studying"
+        android:onClick="footerStudyingButtonClicked"
         android:src="@drawable/folder" />
 
     <!-- Settings -->
@@ -33,6 +35,7 @@
         android:layout_height="55dp"
         android:layout_weight="1"
         android:contentDescription="Settings"
+        android:onClick="footerSettingsButtonClicked"
         android:src="@drawable/folder" />
 
 </LinearLayout>

@@ -9,13 +9,15 @@ public class Collection {
     private boolean inStudy;
     private List<Card> cards;
     private int parent;
+    private boolean isForCards;
 
-    public Collection(int id, String name, boolean inStudy, int parent) {
+    public Collection(int id, String name, boolean inStudy, int parent, boolean isForCards) {
         this.id = id;
         this.name = name;
         this.inStudy = inStudy;
         this.cards = new ArrayList<>();
         this.parent = parent;
+        this.isForCards = isForCards;
     }
 
     public int getId() {
@@ -56,6 +58,14 @@ public class Collection {
 
     public void setParent(int parent) {
         this.parent = parent;
+    }
+
+    public boolean isForCards() {
+        return isForCards;
+    }
+
+    public void setForCards(boolean forCards) {
+        isForCards = forCards;
     }
 
     @Override

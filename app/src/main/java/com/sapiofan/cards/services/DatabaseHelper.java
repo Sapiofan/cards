@@ -33,21 +33,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Create the table
         String createTableQuery = "CREATE TABLE IF NOT EXISTS " + COLLECTIONS +
-                " (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)";
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, parent INTEGER, in_study INTEGER, for_cards INTEGER)";
         db.execSQL(createTableQuery);
         createTableQuery = "CREATE TABLE IF NOT EXISTS " + CARDS +
-                " (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)";
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT, translation TEXT, " +
+                "date LONG, level INTEGER, collection INTEGER)";
         db.execSQL(createTableQuery);
 
         createTableQuery = "CREATE TABLE IF NOT EXISTS " + WORDS_CHARACTERISTICS +
-                " (id INTEGER PRIMARY KEY AUTOINCREMENT, size INTEGER)";
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT, preference_key TEXT, preference_value TEXT)";
         db.execSQL(createTableQuery);
         addDefaultWordSize(db);
     }
 
     private void addDefaultWordSize(SQLiteDatabase db) {
         if (DatabaseUtils.queryNumEntries(db, WORDS_CHARACTERISTICS) < 1) {
-            String query = "INSERT INTO " + WORDS_CHARACTERISTICS + " (size) VALUES (" + 18 + ")";
+            String query = "INSERT INTO " + WORDS_CHARACTERISTICS + " (preference_key, preference_value) " +
+                    "VALUES ('size', 18)";
             db.execSQL(query);
         }
     }
@@ -57,40 +59,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    // Function to add an object to the table
-    public void addCollection(String name, int parent) {
+    public void addCollection(String name, int parent, boolean forCards) {
         SQLiteDatabase db = this.getWritableDatabase();
         String insertQuery;
         if (parent == 0) {
-            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study) VALUES ('" + name + "', NULL, 1)";
+            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study, for_cards) " +
+                    "VALUES ('" + name + "', NULL, 1, " + (forCards ? 1 : 0) + ")";
         } else {
-            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study) VALUES ('" + name + "', " + parent + ", 1)";
+            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study, for_cards) " +
+                    "VALUES ('" + name + "', " + parent + ", 1, " + (forCards ? 1 : 0) + ")";
         }
         db.execSQL(insertQuery);
         db.close();
     }
 
-    // Function to read one object
-//    public Object readObject(int id) {
-//        SQLiteDatabase db = this.getReadableDatabase();
-//        String selectQuery = "SELECT * FROM " + TABLE_NAME + " WHERE id = " + id;
-//        Cursor cursor = db.rawQuery(selectQuery, null);
-//
-//        if (cursor != null)
-//            cursor.moveToFirst();
-//
-//        // Assuming your object has name and age properties
-//        String name = cursor.getString(cursor.getColumnIndex("name"));
-//        int age = cursor.getInt(cursor.getColumnIndex("age"));
-//
-//        cursor.close();
-//        db.close();
-//
-//        // Create and return the object
-//        return new Object(name, age);
-//    }
+    public Collection getCollectionByName(String name, int parent) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent = " + parent + " and name = '"
+                + name + "'";
+        Cursor cursor = db.rawQuery(selectQueryCollection, null);
 
-    // Function to read all objects
+        if (cursor.moveToFirst()) {
+
+            boolean inStudy = cursor.getInt(cursor.getColumnIndex("in_study")) > 0;
+            int id = cursor.getInt(cursor.getColumnIndex("id"));
+            boolean isForCards = cursor.getInt(cursor.getColumnIndex("for_cards")) > 0;
+
+            cursor.close();
+            db.close();
+            return new Collection(id, name, inStudy, parent, isForCards);
+        }
+        cursor.close();
+        db.close();
+
+        return null;
+    }
+
     public List<Object> getObjectsInCollection(int parent_id) {
         List<Object> objects = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -107,13 +111,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                // Assuming your object has name and age properties
                 String name = cursor.getString(cursor.getColumnIndex("name"));
                 boolean inStudy = cursor.getInt(cursor.getColumnIndex("in_study")) > 0;
                 int id = cursor.getInt(cursor.getColumnIndex("id"));
+                boolean isForCards = cursor.getInt(cursor.getColumnIndex("for_cards")) > 0;
 
-                // Create and add the object to the list
-                objects.add(new Collection(id, name, inStudy, parent_id));
+                objects.add(new Collection(id, name, inStudy, parent_id, isForCards));
             } while (cursor.moveToNext());
         }
 
@@ -122,7 +125,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor = db.rawQuery(selectQueryCards, null);
         if (cursor.moveToFirst()) {
             do {
-                // Assuming your object has name and age properties
                 String text = cursor.getString(cursor.getColumnIndex("text"));
                 String translation = cursor.getString(cursor.getColumnIndex("translation"));
                 Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("repetition")));
@@ -219,7 +221,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Assuming your object has name and age properties
         String text = cursor.getString(cursor.getColumnIndex("text"));
         String translation = cursor.getString(cursor.getColumnIndex("translation"));
-        Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("repetition")));
+        Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
         int level = cursor.getInt(cursor.getColumnIndex("level"));
         int collection = cursor.getInt(cursor.getColumnIndex("collection"));
 
@@ -235,20 +237,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public CardWord getWordsSize() {
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + WORDS_CHARACTERISTICS + " WHERE id = 1";
+        String selectQuery = "SELECT * FROM " + WORDS_CHARACTERISTICS + " WHERE preference_key = 'size'";
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor != null)
             cursor.moveToFirst();
 
-        int size = cursor.getInt(cursor.getColumnIndex("size"));
+        int size = Integer.parseInt(cursor.getString(cursor.getColumnIndex("size")));
 
         return new CardWord(size);
     }
 
     public void updateWordsSize(CardWord cardWord) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "UPDATE " + WORDS_CHARACTERISTICS + " SET size = '" + cardWord.getSize() + "' WHERE id = 1";
+        String query = "UPDATE " + WORDS_CHARACTERISTICS + " SET preference_value = '" + cardWord.getSize() +
+                "' WHERE preference_key = 'size'";
         db.execSQL(query);
     }
 }
