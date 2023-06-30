@@ -10,6 +10,7 @@ public class Collection {
     private List<Card> cards;
     private int parent;
     private boolean isForCards;
+    private boolean isSelected = false;
 
     public Collection(int id, String name, boolean inStudy, int parent, boolean isForCards) {
         this.id = id;
@@ -66,6 +67,14 @@ public class Collection {
 
     public void setForCards(boolean forCards) {
         isForCards = forCards;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 
     @Override

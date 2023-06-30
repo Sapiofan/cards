@@ -1,13 +1,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/collection_add_dialog"
     android:padding="16dp">
 
     <EditText
         android:id="@+id/inputField1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Input Field 1"
+        android:hint="Front text"
+        android:background="@drawable/collection_edit"
+        android:textColor="@color/cards_white"
+        android:textColorHint="@color/cards_white"
         android:minHeight="48dp" />
 
     <EditText
@@ -15,7 +19,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/inputField1"
-        android:hint="Input Field 2"
+        android:hint="Back text"
+        android:background="@drawable/collection_edit"
+        android:textColor="@color/cards_white"
+        android:textColorHint="@color/cards_white"
         android:minHeight="48dp" />
 
     <Switch
@@ -24,12 +31,18 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/inputField2"
         android:minHeight="48dp"
-        android:text="Switch" />
+        android:textSize="18sp"
+        android:textColor="@color/cards_white"
+        android:track="@drawable/switch_track"
+        android:thumb="@drawable/switch_thumb"
+        android:text="Create card with reverse translation" />
 
     <Button
         android:id="@+id/saveCollectionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/switchButton"
-        android:text="Submit" />
+        android:background="@android:color/transparent"
+        android:textColor="@color/cards_white"
+        android:text="Create card" />
 </RelativeLayout>

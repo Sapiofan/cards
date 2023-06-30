@@ -1,23 +1,20 @@
 package com.sapiofan.cards;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,13 +29,19 @@ import com.sapiofan.cards.entities.Collection;
 import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements CollectionAdapter.OnCollectionClickListener {
+public class MainActivity extends AppCompatActivity implements CollectionAdapter.OnCollectionClickListener,
+        CollectionAdapter.OnSelectionModeChangeListener {
 
     private CardAdapter cardAdapter;
+    private CollectionAdapter collectionAdapter;
     private List<Card> cardList;
+
+    private RecyclerView recyclerView;
+    private TextView emptyTextView;
+    private Button openModalButton;
+    private Dialog modalDialog;
 
     private DatabaseHelper databaseHelper = new DatabaseHelper(this);
 
@@ -47,40 +50,11 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Assuming you have retrieved the list of cards
-//        cardList = getCardList();
-//        List<Collection> collectionList = getCollectionList();
-        List<Object> collectionObjects = databaseHelper.getObjectsInCollection(0);
-        List<Collection> collectionList = new ArrayList<>();
-        for (Object collectionObject : collectionObjects) {
-            collectionList.add((Collection) collectionObject);
-        }
+        recyclerView = findViewById(R.id.recyclerView);
+        emptyTextView = findViewById(R.id.emptyTextView);
+        openModalButton = findViewById(R.id.addObject);
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        TextView emptyTextView = findViewById(R.id.emptyTextView);
-
-
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
-        recyclerView.setLayoutManager(layoutManager);
-
-        CollectionAdapter collectionAdapter = new CollectionAdapter(collectionList, this, databaseHelper);
-        recyclerView.setAdapter(collectionAdapter);
-        recyclerView.addItemDecoration(new CollectionDecoration());
-
-        if (collectionList.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            emptyTextView.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            emptyTextView.setVisibility(View.GONE);
-        }
-
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//
-//        recyclerView.addItemDecoration(new CardItemDecoration());
-//
-//        CardAdapter cardAdapter = new CardAdapter(cardList, databaseHelper.getWordsSize());
-//        recyclerView.setAdapter(cardAdapter);
+        setCollectionAdapter(null, recyclerView);
 
         EditText searchEditText = findViewById(R.id.searchEditText);
 
@@ -103,10 +77,7 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
             }
         });
 
-
-        Button openModalButton = findViewById(R.id.addObject);
-
-        Dialog modalDialog = new Dialog(this);
+        modalDialog = new Dialog(this);
         modalDialog.setContentView(R.layout.modal_add_collection);
         modalDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 
@@ -120,8 +91,6 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
             public void onClick(View v) {
                 // Close the modal by dismissing the dialog or hiding the view
                 modalDialog.dismiss();
-                // Alternatively, if you're using a custom view instead of a dialog, you can use:
-                // modalView.setVisibility(View.GONE);
             }
         });
 
@@ -131,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
                 collectionAdapter.addNewCollection(collectionName.getText().toString(), forCards.isChecked());
                 recyclerView.setVisibility(View.VISIBLE);
                 emptyTextView.setVisibility(View.GONE);
+                collectionName.setText("");
                 modalDialog.dismiss();
             }
         });
@@ -157,56 +127,110 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
         startActivity(intent);
     }
 
-    private List<Collection> getCollectionList() {
+    private void setCollectionAdapter(Collection collection, RecyclerView recyclerView) {
+        List<Object> collectionObjects;
+        if (collection == null) {
+            collectionObjects = databaseHelper.getObjectsInCollection(0);
+        } else {
+            collectionObjects = databaseHelper.getObjectsInCollection(collection.getId());
+        }
         List<Collection> collectionList = new ArrayList<>();
-        Collection collection = new Collection(2, "Collection 2", true, 0, true);
-        collection.setCards(getCardList());
-        collectionList.add(new Collection(1, "Collection 1Collection 1Collection 1", true, 0, true));
-        collectionList.add(collection);
-        collectionList.add(new Collection(3, "Collection 3", true, 0, true));
-        collectionList.add(new Collection(4, "Collection 4", true, 0, true));
-        collectionList.add(new Collection(5, "Collection 5", true, 0, true));
-        collectionList.add(new Collection(6, "Collection 6", true, 0, true));
-        collectionList.add(new Collection(7, "Collection 7", true, 0, true));
-        collectionList.add(new Collection(8, "Collection 8", true, 0, true));
-        collectionList.add(new Collection(9, "Collection 9", true, 0, true));
+        for (Object collectionObject : collectionObjects) {
+            collectionList.add((Collection) collectionObject);
+        }
+        collectionAdapter = new CollectionAdapter(collectionList, this, databaseHelper);
+        recyclerView.setAdapter(collectionAdapter);
+        recyclerView.addItemDecoration(new CollectionDecoration());
+        recyclerView.removeItemDecorationAt(0);
+        collectionAdapter.setOnSelectionModeChangeListener(this);
 
-        return collectionList;
+        setRecyclerViewVisibility(collectionObjects);
+
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        recyclerView.setLayoutManager(layoutManager);
+        openModalButton.setText("Add collection");
     }
 
-    private List<Card> getCardList() {
-        // Retrieve the list of cards from your data source or API call
-        // For demonstration purposes, let's create a dummy list
-        List<Card> cards = new ArrayList<>();
-        cards.add(new Card(1, "Card 1", "Translation 1 Translation 1Translation 1Translation 1Translation 1Translation 1Translation 1Translation 1Translation 1", new Date(), 1, 0));
-        cards.add(new Card(2, "Card 2", "Translation 2", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
-        cards.add(new Card(3, "Card 3", "Translation 3", new Date(), 1, 0));
+    private void setCardAdapter(Collection collection) {
+        List<Object> collectionObjects = databaseHelper.getObjectsInCollection(collection.getId());
+        List<Card> collectionList = new ArrayList<>();
+        for (Object collectionObject : collectionObjects) {
+            collectionList.add((Card) collectionObject);
+        }
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        return cards;
+        recyclerView.addItemDecoration(new CardItemDecoration());
+
+        cardAdapter = new CardAdapter(collectionList, databaseHelper.getWordsSize());
+        recyclerView.setAdapter(cardAdapter);
+        recyclerView.removeItemDecorationAt(0);
+
+        setRecyclerViewVisibility(collectionObjects);
+        openModalButton.setText("Add card");
+        manageModalFormForCards();
     }
 
     @Override
     public void onCollectionClick(Collection collection) {
-        // Handle collection click event
-        // Retrieve new cards from the clicked collection
-        List<Card> newCards = collection.getCards();
-
-        // Update the RecyclerView with the new card list
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if (collection.isForCards()) {
+            setCardAdapter(collection);
+        } else {
+            setCollectionAdapter(collection, recyclerView);
+        }
+    }
 
-        cardAdapter = new CardAdapter(newCards, databaseHelper.getWordsSize());
-        recyclerView.setAdapter(cardAdapter);
-        recyclerView.removeItemDecorationAt(0);
-        recyclerView.addItemDecoration(new CardItemDecoration());
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (collectionAdapter.isSelectionMode()) {
+            getMenuInflater().inflate(R.menu.collection_edit_menu, menu);
+        }
+        return true;
+    }
+
+    @Override
+    public void onSelectionModeChanged(boolean selectionMode) {
+        supportInvalidateOptionsMenu();
+
+        if (!selectionMode) {
+            exitEditMode();
+        } else {
+            collectionAdapter.setSelectionMode(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.c_menu_remove:
+                // Remove selected collections
+                List<Collection> selectedCollections = collectionAdapter.getSelectedCollections();
+                collectionAdapter.removeCollections(selectedCollections);
+                exitEditMode();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void exitEditMode() {
+        collectionAdapter.setSelectionMode(false);
+        collectionAdapter.notifyDataSetChanged();
+        supportInvalidateOptionsMenu();
+    }
+
+    private void setRecyclerViewVisibility(List<Object> collectionObjects) {
+        if (collectionObjects.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyTextView.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyTextView.setVisibility(View.GONE);
+        }
+    }
+
+    private void manageModalFormForCards() {
+        modalDialog.setContentView(R.layout.modal_add_card);
+        modalDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
     }
 }

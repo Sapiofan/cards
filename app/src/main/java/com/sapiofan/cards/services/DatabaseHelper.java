@@ -69,17 +69,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study, for_cards) " +
                     "VALUES ('" + name + "', " + parent + ", 1, " + (forCards ? 1 : 0) + ")";
         }
+        System.out.println(insertQuery);
         db.execSQL(insertQuery);
         db.close();
     }
 
     public Collection getCollectionByName(String name, int parent) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent = " + parent + " and name = '"
-                + name + "'";
+        String selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent" + (parent == 0 ? " IS NULL"
+                : (" = " + parent)) + " and name = '" + name + "'";
+        System.out.println(selectQueryCollection);
         Cursor cursor = db.rawQuery(selectQueryCollection, null);
 
         if (cursor.moveToFirst()) {
+            System.out.println("In cursor");
 
             boolean inStudy = cursor.getInt(cursor.getColumnIndex("in_study")) > 0;
             int id = cursor.getInt(cursor.getColumnIndex("id"));
@@ -101,8 +104,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String selectQueryCollection;
         String selectQueryCards;
         if (parent_id == 0) {
-            selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent = NULL";
-            selectQueryCards = "SELECT * FROM " + CARDS + " WHERE collection = NULL";
+            selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent IS NULL";
+            selectQueryCards = "SELECT * FROM " + CARDS + " WHERE collection IS NULL";
         } else {
             selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent = " + parent_id;
             selectQueryCards = "SELECT * FROM " + CARDS + " WHERE collection = " + parent_id;
@@ -161,16 +164,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void removeObjectsInCollection() {
-
-    }
-
-    public boolean renameCollection(int id, String name) {
+    public void renameCollection(int id, String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         String updateQuery = "UPDATE " + COLLECTIONS + " SET name = '" + name + "' WHERE id = " + id;
         db.execSQL(updateQuery);
         db.close();
-        return true;
+    }
+
+    public void setCollectionVisibility(int id, boolean visibility) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String updateQuery = "UPDATE " + COLLECTIONS + " SET in_study = '" + (visibility ? 1 : 0) + "' WHERE id = " + id;
+        db.execSQL(updateQuery);
+        db.close();
     }
 
     public void removeCardById(int card_id) {
@@ -218,7 +223,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
 
-        // Assuming your object has name and age properties
         String text = cursor.getString(cursor.getColumnIndex("text"));
         String translation = cursor.getString(cursor.getColumnIndex("translation"));
         Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
@@ -243,7 +247,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
 
-        int size = Integer.parseInt(cursor.getString(cursor.getColumnIndex("size")));
+        int size = Integer.parseInt(cursor.getString(cursor.getColumnIndex("preference_value")));
 
         return new CardWord(size);
     }

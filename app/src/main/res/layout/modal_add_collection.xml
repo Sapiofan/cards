@@ -9,7 +9,7 @@
         android:layout_width="395dp"
         android:layout_height="40dp"
         android:text="New collection"
-        android:textColor="#B2D3E3"
+        android:textColor="@color/cards_white"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -19,7 +19,7 @@
         android:layout_height="34dp"
         android:layout_below="@id/headerTextView"
         android:text="Enter a name for the collection"
-        android:textColor="#B2D3E3"
+        android:textColor="@color/cards_white"
         android:textSize="16sp" />
 
     <EditText
@@ -30,15 +30,15 @@
         android:hint="My New Collection"
         android:background="@drawable/collection_edit"
         android:minHeight="48dp"
-        android:textColor="#B2D3E3"
-        android:textColorHint="#B2D3E3" />
+        android:textColor="@color/cards_white"
+        android:textColorHint="@color/cards_white" />
 
     <CheckBox
         android:id="@+id/forCards"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/inputEditText"
-        android:textColor="#B2D3E3"
+        android:textColor="@color/cards_white"
         android:textSize="16sp"
         android:text="This collection is for cards" />
 
@@ -56,7 +56,7 @@
             android:background="@android:color/transparent"
             android:layout_margin="16dp"
             android:layout_weight="1"
-            android:textColor="#B2D3E3"
+            android:textColor="@color/cards_white"
             android:text="Cancel" />
 
         <Button
@@ -66,7 +66,7 @@
             android:background="@android:color/transparent"
             android:layout_margin="16dp"
             android:layout_weight="1"
-            android:textColor="#B2D3E3"
+            android:textColor="@color/cards_white"
             android:text="Create" />
     </LinearLayout>
 </RelativeLayout>
