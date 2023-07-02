@@ -9,6 +9,7 @@ public class Card {
     private Date nextRepetition;
     private int lastPeriod = 0;
     private int collection_id;
+    private boolean isSelected = false;
 
     private boolean isFlipped = false;
 
@@ -75,6 +76,14 @@ public class Card {
 
     public void setFlipped(boolean flipped) {
         isFlipped = flipped;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 
     @Override

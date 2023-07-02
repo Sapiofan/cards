@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CollectionAdapter.OnCollectionClickListener,
-        CollectionAdapter.OnSelectionModeChangeListener {
+        CollectionAdapter.OnSelectionModeChangeListener, CardAdapter.OnSelectionModeCardChangeListener {
 
     private CardAdapter cardAdapter;
     private CollectionAdapter collectionAdapter;
@@ -54,7 +55,14 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
         emptyTextView = findViewById(R.id.emptyTextView);
         openModalButton = findViewById(R.id.addObject);
 
+        // default card adapter
+        cardAdapter = new CardAdapter(new ArrayList<>(), databaseHelper.getWordsSize(), databaseHelper);
+        cardAdapter.setCurrentFolderId(0);
+        cardAdapter.setOnSelectionModeChangeListener(this);
+
+        // initial collection adapter
         setCollectionAdapter(null, recyclerView);
+
 
         EditText searchEditText = findViewById(R.id.searchEditText);
 
@@ -153,15 +161,17 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
 
     private void setCardAdapter(Collection collection) {
         List<Object> collectionObjects = databaseHelper.getObjectsInCollection(collection.getId());
-        List<Card> collectionList = new ArrayList<>();
+        List<Card> cardList = new ArrayList<>();
         for (Object collectionObject : collectionObjects) {
-            collectionList.add((Card) collectionObject);
+            cardList.add((Card) collectionObject);
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         recyclerView.addItemDecoration(new CardItemDecoration());
 
-        cardAdapter = new CardAdapter(collectionList, databaseHelper.getWordsSize());
+        cardAdapter = new CardAdapter(cardList, databaseHelper.getWordsSize(), databaseHelper);
+        cardAdapter.setCurrentFolderId(collection.getId());
+        cardAdapter.setOnSelectionModeChangeListener(this);
         recyclerView.setAdapter(cardAdapter);
         recyclerView.removeItemDecorationAt(0);
 
@@ -173,6 +183,8 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
     @Override
     public void onCollectionClick(Collection collection) {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        setTitle(collection.getName());
+
         if (collection.isForCards()) {
             setCardAdapter(collection);
         } else {
@@ -184,8 +196,13 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
     public boolean onCreateOptionsMenu(Menu menu) {
         if (collectionAdapter.isSelectionMode()) {
             getMenuInflater().inflate(R.menu.collection_edit_menu, menu);
+            return true;
         }
-        return true;
+        if(cardAdapter.isSelectionMode()) {
+            getMenuInflater().inflate(R.menu.card_edit_menu, menu);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -200,6 +217,17 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
     }
 
     @Override
+    public void onSelectionCardModeChanged(boolean selectionMode) {
+        supportInvalidateOptionsMenu();
+
+        if (!selectionMode) {
+            exitCardEditMode();
+        } else {
+            cardAdapter.setSelectionMode(true);
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.c_menu_remove:
@@ -207,6 +235,12 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
                 List<Collection> selectedCollections = collectionAdapter.getSelectedCollections();
                 collectionAdapter.removeCollections(selectedCollections);
                 exitEditMode();
+                return true;
+            case R.id.card_menu_remove:
+                // Remove selected cards
+                List<Card> selectedCards = cardAdapter.getSelectedCards();
+                cardAdapter.removeCards(selectedCards);
+                exitCardEditMode();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -216,6 +250,12 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
     private void exitEditMode() {
         collectionAdapter.setSelectionMode(false);
         collectionAdapter.notifyDataSetChanged();
+        supportInvalidateOptionsMenu();
+    }
+
+    private void exitCardEditMode() {
+        cardAdapter.setSelectionMode(false);
+        cardAdapter.notifyDataSetChanged();
         supportInvalidateOptionsMenu();
     }
 
@@ -232,5 +272,21 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
     private void manageModalFormForCards() {
         modalDialog.setContentView(R.layout.modal_add_card);
         modalDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        EditText text1 = modalDialog.findViewById(R.id.card_text1);
+        EditText text2 = modalDialog.findViewById(R.id.card_text2);
+        Button saveButton = modalDialog.findViewById(R.id.saveCollectionButton);
+        Switch switchButton = modalDialog.findViewById(R.id.switchButton);
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardAdapter.addCard(text1.getText().toString(), text2.getText().toString(), switchButton.isChecked());
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyTextView.setVisibility(View.GONE);
+                text1.setText("");
+                text2.setText("");
+                modalDialog.dismiss();
+            }
+        });
     }
 }

@@ -130,7 +130,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 String text = cursor.getString(cursor.getColumnIndex("text"));
                 String translation = cursor.getString(cursor.getColumnIndex("translation"));
-                Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("repetition")));
+                Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
                 int id = cursor.getInt(cursor.getColumnIndex("id"));
                 int level = cursor.getInt(cursor.getColumnIndex("level"));
 
@@ -193,7 +193,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String insertQuery = "INSERT INTO " + CARDS + " (text, translation, date, level, collection) " +
                 "VALUES ('" + text + "', '" + translation + "', '" + dateFormat.format(new Date()) +
-                "', " + 1 + "', " + parent + ")";
+                "', " + 1 + ", " + parent + ")";
         db.execSQL(insertQuery);
         db.close();
 
@@ -233,6 +233,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
 
         return new Card(id, text, translation, repetition, level, collection);
+    }
+
+    public List<Card> findCards(String text1, String text2, int currentFolderId) {
+        List<Card> cards = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + CARDS + " WHERE collection = " + currentFolderId + " and " +
+                "((text = '" + text1 + "' and translation = '" + text2 + "')" +
+                " or (text = '"+ text2 + "' and translation = '" + text1 + "'))";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                String text = cursor.getString(cursor.getColumnIndex("text"));
+                String translation = cursor.getString(cursor.getColumnIndex("translation"));
+                Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                int level = cursor.getInt(cursor.getColumnIndex("level"));
+
+                // Create and add the object to the list
+                cards.add(new Card(id, text, translation, repetition, level, currentFolderId));
+            } while (cursor.moveToNext());
+        }
+
+        return cards;
     }
 
     public void moveObjectsToOtherCollection(List<Integer> ids) {

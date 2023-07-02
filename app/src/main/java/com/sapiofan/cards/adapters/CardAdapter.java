@@ -3,6 +3,7 @@ package com.sapiofan.cards.adapters;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sapiofan.cards.R;
 import com.sapiofan.cards.entities.Card;
 import com.sapiofan.cards.entities.CardWord;
+import com.sapiofan.cards.entities.Collection;
 import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
@@ -25,11 +27,16 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     private List<Card> cardList;
     private List<Card> filteredCardList;
     private CardWord cardWord;
+    private DatabaseHelper databaseHelper;
+    private OnSelectionModeCardChangeListener selectionModeChangeListener;
+    private int currentFolderId;
+    private boolean selectionMode = false;
 
-    public CardAdapter(List<Card> cardList, CardWord cardWord) {
+    public CardAdapter(List<Card> cardList, CardWord cardWord, DatabaseHelper databaseHelper) {
         this.cardList = cardList;
         this.filteredCardList = new ArrayList<>(cardList);
         this.cardWord = cardWord;
+        this.databaseHelper = databaseHelper;
     }
 
     @NonNull
@@ -42,6 +49,10 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Card card = filteredCardList.get(position);
+        if(card == null) {
+            Log.e("Empty card", "Card is null");
+            return;
+        }
         holder.textViewFront.setText(card.getText());
         holder.textViewFront.setTextSize(TypedValue.COMPLEX_UNIT_PX, cardWord.getSize());
         holder.textViewBack.setText(card.getTranslation());
@@ -61,7 +72,76 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         return filteredCardList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public void addCard(String text1, String text2, boolean reverse) {
+        databaseHelper.addCard(text1, text2, currentFolderId, reverse);
+        cardList.addAll(databaseHelper.findCards(text1, text2, currentFolderId));
+        filter("");
+        notifyDataSetChanged();
+    }
+
+    public void removeCards(List<Card> selectedCards) {
+        for (Card selectedCard : selectedCards) {
+            databaseHelper.removeCardById(selectedCard.getId());
+        }
+
+        cardList.removeAll(selectedCards);
+        filter("");
+        notifyDataSetChanged();
+    }
+
+    public int getCurrentFolderId() {
+        return currentFolderId;
+    }
+
+    public void setCurrentFolderId(int currentFolderId) {
+        this.currentFolderId = currentFolderId;
+    }
+
+    public List<Card> getSelectedCards() {
+        List<Card> selectedCards = new ArrayList<>();
+        for (Card card : filteredCardList) {
+            if (card.isSelected()) {
+                selectedCards.add(card);
+            }
+        }
+        return selectedCards;
+    }
+
+    public boolean isSelectionMode() {
+        return selectionMode;
+    }
+
+    public void setSelectionMode(boolean selectionMode) {
+        this.selectionMode = selectionMode;
+    }
+
+    public void setOnSelectionModeChangeListener(OnSelectionModeCardChangeListener listener) {
+        this.selectionModeChangeListener = listener;
+    }
+
+    public void filter(String query) {
+        query = query.toLowerCase().trim();
+
+        filteredCardList.clear();
+
+        if (query.isEmpty()) {
+            filteredCardList.addAll(cardList);
+        } else {
+            for (Card card : cardList) {
+                if (card.getText().toLowerCase().contains(query)) {
+                    filteredCardList.add(card);
+                }
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+    public void setCards(List<Card> cards) {
+        this.cardList = cards;
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
         TextView textViewFront;
         TextView textViewBack;
         boolean isFrontVisible = true;
@@ -75,14 +155,55 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Card card = cardList.get(position);
-                    if (isFrontVisible) {
-                        applyAnimation(textViewFront, textViewBack);
+                    if(!selectionMode) {
+                        if (isFrontVisible) {
+                            applyAnimation(textViewFront, textViewBack);
+                        } else {
+                            applyAnimation(textViewBack, textViewFront);
+                        }
+                        isFrontVisible = !isFrontVisible;
                     } else {
-                        applyAnimation(textViewBack, textViewFront);
+                        card.setSelected(!card.isSelected());
+                        itemView.setSelected(card.isSelected());
+                        if (!card.isSelected()) {
+                            if (selectionModeChangeListener != null) {
+                                selectionModeChangeListener.onSelectionCardModeChanged(false);
+                            }
+                        }
                     }
-                    isFrontVisible = !isFrontVisible;
                 }
             });
+
+            itemView.setOnLongClickListener(this);
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                Card card = filteredCardList.get(position);
+                card.setSelected(!card.isSelected());
+                itemView.setSelected(card.isSelected());
+                boolean selectionMode = isAnyCardSelected();
+                setSelectionMode(selectionMode);
+
+                if (selectionModeChangeListener != null) {
+                    selectionModeChangeListener.onSelectionCardModeChanged(selectionMode);
+                }
+                notifyItemChanged(position);
+                return true;
+            }
+            return false;
+        }
+
+        private boolean isAnyCardSelected() {
+//            return filteredCardList.stream().anyMatch(Card::isSelected);
+            for (Card card : filteredCardList) {
+                if (card.isSelected()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void applyAnimation(final View visibleView, final View invisibleView) {
@@ -107,25 +228,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         }
     }
 
-    public void filter(String query) {
-        query = query.toLowerCase().trim(); // Convert query to lowercase and remove leading/trailing spaces
-
-        filteredCardList.clear(); // Clear previous filtered cards
-
-        if (query.isEmpty()) {
-            filteredCardList.addAll(cardList); // If query is empty, show all cards
-        } else {
-            for (Card card : cardList) {
-                if (card.getText().toLowerCase().contains(query)) {
-                    filteredCardList.add(card); // Add card to filteredCardList if its text contains the query
-                }
-            }
-        }
-
-        notifyDataSetChanged(); // Notify adapter about the data change
-    }
-
-    public void setCards(List<Card> cards) {
-        this.cardList = cards;
+    public interface OnSelectionModeCardChangeListener {
+        void onSelectionCardModeChanged(boolean selectionMode);
     }
 }

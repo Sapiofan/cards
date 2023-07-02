@@ -5,44 +5,50 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/inputField1"
+        android:id="@+id/card_text1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Front text"
+        android:textSize="22sp"
         android:background="@drawable/collection_edit"
         android:textColor="@color/cards_white"
         android:textColorHint="@color/cards_white"
         android:minHeight="48dp" />
 
     <EditText
-        android:id="@+id/inputField2"
+        android:id="@+id/card_text2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/inputField1"
+        android:layout_below="@id/card_text1"
         android:hint="Back text"
+        android:textSize="22sp"
         android:background="@drawable/collection_edit"
         android:textColor="@color/cards_white"
         android:textColorHint="@color/cards_white"
+        android:layout_marginTop="20dp"
         android:minHeight="48dp" />
 
     <Switch
         android:id="@+id/switchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/inputField2"
+        android:layout_below="@id/card_text2"
         android:minHeight="48dp"
         android:textSize="18sp"
         android:textColor="@color/cards_white"
         android:track="@drawable/switch_track"
         android:thumb="@drawable/switch_thumb"
+        android:layout_marginTop="8dp"
         android:text="Create card with reverse translation" />
 
     <Button
         android:id="@+id/saveCollectionButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/switchButton"
-        android:background="@android:color/transparent"
+        android:background="@drawable/add_card_button"
         android:textColor="@color/cards_white"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
         android:text="Create card" />
 </RelativeLayout>
