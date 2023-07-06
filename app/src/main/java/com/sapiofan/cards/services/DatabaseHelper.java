@@ -267,12 +267,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT * FROM " + WORDS_CHARACTERISTICS + " WHERE preference_key = 'size'";
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        if (cursor != null)
+        if (cursor != null) {
             cursor.moveToFirst();
+            int size = Integer.parseInt(cursor.getString(cursor.getColumnIndex("preference_value")));
+            return new CardWord(size);
+        }
 
-        int size = Integer.parseInt(cursor.getString(cursor.getColumnIndex("preference_value")));
-
-        return new CardWord(size);
+        return null;
     }
 
     public void updateWordsSize(CardWord cardWord) {
@@ -280,5 +281,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String query = "UPDATE " + WORDS_CHARACTERISTICS + " SET preference_value = '" + cardWord.getSize() +
                 "' WHERE preference_key = 'size'";
         db.execSQL(query);
+    }
+
+    public Collection getParentByChildId(int currentCollection) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + COLLECTIONS + " where id = " + currentCollection;
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndex("parent"));
+            selectQuery = "SELECT * FROM " + COLLECTIONS + " where id = " + id;
+            cursor = db.rawQuery(selectQuery, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(cursor.getColumnIndex("name"));
+                int parent_id = cursor.getInt(cursor.getColumnIndex("parent"));
+                boolean in_study = cursor.getInt(cursor.getColumnIndex("in_study")) == 1;
+                boolean for_cards = cursor.getInt(cursor.getColumnIndex("for_cards")) == 1;
+                return new Collection(id, name, in_study, parent_id, for_cards);
+            }
+        }
+
+        return null;
     }
 }
