@@ -77,7 +77,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Collection getCollectionByName(String name, int parent) {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent" + (parent == 0 ? " IS NULL"
-                : (" = " + parent)) + " and name = '" + name + "'";
+                : (" = " + parent)) + " AND name = '" + name + "'";
         System.out.println(selectQueryCollection);
         Cursor cursor = db.rawQuery(selectQueryCollection, null);
 
@@ -285,7 +285,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Collection getParentByChildId(int currentCollection) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + COLLECTIONS + " where id = " + currentCollection;
+        String selectQuery = "SELECT * FROM " + COLLECTIONS + " WHERE id = " + currentCollection;
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -302,5 +302,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return null;
+    }
+
+    public List<Card> getAllVisibleCards() {
+        List<Card> cards = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + CARDS + " INNER JOIN collections " +
+                "ON collections.id = cards.collection " +
+                "WHERE collections.in_study = 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                String text = cursor.getString(cursor.getColumnIndex("text"));
+                String translation = cursor.getString(cursor.getColumnIndex("translation"));
+                Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                int level = cursor.getInt(cursor.getColumnIndex("level"));
+                int folderId = cursor.getInt(cursor.getColumnIndex("collection"));
+
+                // Create and add the object to the list
+                cards.add(new Card(id, text, translation, repetition, level, folderId));
+            } while (cursor.moveToNext());
+        }
+
+        return cards;
     }
 }

@@ -73,6 +73,7 @@
             android:layout_marginBottom="10dp"
             android:text="Add collection"
             app:backgroundTint="@color/cards_yellow"
+            android:textColor="@color/white"
             app:cornerRadius="20dp"
             app:layout_constraintBottom_toTopOf="@+id/include"
             app:layout_constraintEnd_toEndOf="parent"

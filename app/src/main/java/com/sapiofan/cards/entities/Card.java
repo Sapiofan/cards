@@ -1,6 +1,7 @@
 package com.sapiofan.cards.entities;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class Card {
     private int id;
@@ -84,6 +85,20 @@ public class Card {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return id == card.id && collection_id == card.collection_id
+                && text.equals(card.text) && translation.equals(card.translation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, text, translation, collection_id);
     }
 
     @Override
