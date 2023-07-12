@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -309,7 +310,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + CARDS + " INNER JOIN collections " +
                 "ON collections.id = cards.collection " +
-                "WHERE collections.in_study = 1";
+                "WHERE collections.in_study = 1 AND cards.date >= " + new Date().getTime();
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
             do {
@@ -326,5 +327,86 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return cards;
+    }
+
+    public void updateCardsLevel(List<Card> higherLevel, List<Card> lowerLevel) {
+        SQLiteDatabase db = this.getWritableDatabase();
+//        for (Card card : higherLevel) {
+//            int lastPeriod = card.getLastPeriod() + 1 >= Period.values().length ? Period.values().length - 1
+//                    : card.getLastPeriod() + 1;
+//            String query = "UPDATE " + CARDS + " SET level = '" + (lastPeriod) + "', date = "
+//                    + (new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L) +
+//                    " WHERE id = " + card.getId();
+//            db.execSQL(query);
+//        }
+        if(higherLevel.size() != 0) {
+            try {
+                db.beginTransaction();
+
+                for (Card card : higherLevel) {
+                    System.out.println(card.getText());
+                    System.out.println(card.getLastPeriod());
+                    int lastPeriod = card.getLastPeriod() + 1 >= Period.values().length ? Period.values().length - 1
+                            : card.getLastPeriod() + 1;
+                    long date = new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L;
+                    String query = "UPDATE " + CARDS +
+                            " SET level = '" + lastPeriod +
+                            "', date = " + date +
+                            " WHERE id = " + card.getId();
+                    db.execSQL(query);
+                    card.setLastPeriod(lastPeriod);
+                    card.setNextRepetition(new Date(date));
+                }
+
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+        if(lowerLevel.size() != 0) {
+            try {
+                db.beginTransaction();
+                for (Card card : lowerLevel) {
+                    int lastPeriod = Math.max(card.getLastPeriod() - 1, 0);
+                    long date = new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L;
+                    String query = "UPDATE " + CARDS + " SET level = '" + (lastPeriod) + "', date = "
+                            + date +
+                            " WHERE id = " + card.getId();
+                    db.execSQL(query);
+                    card.setLastPeriod(lastPeriod);
+                    card.setNextRepetition(new Date(date));
+                }
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
+
+//        for (Card card : lowerLevel) {
+//            int lastPeriod = Math.max(card.getLastPeriod() - 1, 0);
+//            String query = "UPDATE " + CARDS + " SET level = '" + (lastPeriod) + "', date = "
+//                    + (new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L) +
+//                    " WHERE id = " + card.getId();
+//            db.execSQL(query);
+//        }
+
+//        queryBuilder = new StringBuilder("UPDATE ").append(CARDS).append(" SET ");
+//
+//        for (Card card : lowerLevel) {
+//            int lastPeriod = Math.max(card.getLastPeriod() - 1, 0);
+//
+//            // Append the SET clause for each card
+//            queryBuilder.append("id = ").append(card.getId()).append(", ")
+//                    .append("level = CASE WHEN id = ").append(card.getId()).append(" THEN ")
+//                    .append(lastPeriod).append(" ELSE level END, ")
+//                    .append("date = CASE WHEN id = ").append(card.getId()).append(" THEN ")
+//                    .append(new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L)
+//                    .append(" ELSE date END, ");
+//        }
+//
+//        queryBuilder.setLength(queryBuilder.length() - 2);
+//
+//        query = queryBuilder.toString();
+//        db.execSQL(query);
     }
 }

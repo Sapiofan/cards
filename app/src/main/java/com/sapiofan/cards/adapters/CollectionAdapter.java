@@ -160,6 +160,11 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         public void bind(Collection collection) {
             textViewName.setText(collection.getName());
             itemView.setSelected(collection.isSelected());
+            if(!collection.isInStudy()) {
+                buttonHide.setImageResource(R.drawable.sleeping);
+            } else {
+                buttonHide.setImageResource(R.drawable.nerd);
+            }
         }
 
         @Override

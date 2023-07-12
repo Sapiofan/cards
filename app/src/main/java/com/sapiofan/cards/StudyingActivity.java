@@ -50,11 +50,12 @@ public class StudyingActivity extends AppCompatActivity {
     private boolean isFrontVisible = true;
     private int recalledCount = 0;
 
-    private Map<Card, Boolean> rememberedWords = new HashMap<>();
-    private Map<Card, Integer> forgotWords = new HashMap<>();
+    private final Map<Card, Boolean> rememberedWords = new HashMap<>();
+    private final Map<Card, Integer> forgotWords = new HashMap<>();
+    private List<Card> cards;
     private Card[] currentCard = new Card[1];
 
-    private DatabaseHelper databaseHelper = new DatabaseHelper(this);
+    private final DatabaseHelper databaseHelper = new DatabaseHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +64,7 @@ public class StudyingActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setTitle("Studying");
 
         // Initialize views
         CardWord cardWord = databaseHelper.getWordsSize();
@@ -80,15 +82,22 @@ public class StudyingActivity extends AppCompatActivity {
         textViewBack.setTextSize(TypedValue.COMPLEX_UNIT_PX, cardWord.getSize());
 
         Random random = new Random();
-        List<Card> cards = databaseHelper.getAllVisibleCards();
+        cards = databaseHelper.getAllVisibleCards();
         for (Card cardFromDB : cards) {
             rememberedWords.put(cardFromDB, false);
             forgotWords.put(cardFromDB, 0);
         }
 
-        currentCard[0] = cards.get(Math.abs(random.nextInt()) % cards.size());
-        textViewFront.setText(currentCard[0].getText());
-        textViewBack.setText(currentCard[0].getTranslation());
+        if (cards.size() > 0) {
+            currentCard[0] = cards.get(Math.abs(random.nextInt()) % cards.size());
+            textViewFront.setText(currentCard[0].getText());
+            textViewBack.setText(currentCard[0].getTranslation());
+        } else {
+            hideProgressElements();
+            TextView desc = findViewById(R.id.description);
+            desc.setText("For now all cards are repeated. Add new words or wait for the next repetition");
+            desc.setVisibility(View.VISIBLE);
+        }
 
         int totalCount = cards.size();
         progressBar.setMax(totalCount);
@@ -98,7 +107,7 @@ public class StudyingActivity extends AppCompatActivity {
         forgotButton.setOnClickListener(v -> {
             while (true) {
                 Card recallCard = cards.get(Math.abs(random.nextInt()) % cards.size());
-                if(!rememberedWords.get(recallCard)) {
+                if (!rememberedWords.get(recallCard)) {
                     forgotWords.put(currentCard[0], forgotWords.get(currentCard[0]) + 1);
                     currentCard[0] = recallCard;
                     textViewFront.setText(recallCard.getText());
@@ -114,16 +123,17 @@ public class StudyingActivity extends AppCompatActivity {
             recalledCount++;
             int currentProgress = progressBar.getProgress();
             int maxProgress = progressBar.getMax();
-            if (currentProgress < maxProgress) {
+            if (recalledCount < maxProgress) {
                 progressBar.setProgress(currentProgress + 1);
             } else {
+                hideProgressElements();
                 handleStudyingResults();
-                // show results of studying
+                return;
             }
             recalledCountTextView.setText(String.valueOf(recalledCount));
             while (true) {
                 Card recallCard = cards.get(Math.abs(random.nextInt()) % cards.size());
-                if(!rememberedWords.get(recallCard)) {
+                if (!rememberedWords.get(recallCard)) {
                     currentCard[0] = recallCard;
                     textViewFront.setText(recallCard.getText());
                     textViewBack.setText(recallCard.getTranslation());
@@ -144,34 +154,78 @@ public class StudyingActivity extends AppCompatActivity {
     }
 
     private void handleStudyingResults() {
+        TextView desc = findViewById(R.id.description);
+        desc.setText("Repeated words: " + rememberedWords.size());
+        supportInvalidateOptionsMenu();
+        desc.setVisibility(View.VISIBLE);
+        List<Card> higherLevel = new ArrayList<>();
+        List<Card> lowerLevel = new ArrayList<>();
+        for (Map.Entry<Card, Integer> cardEntry : forgotWords.entrySet()) {
+            if (cardEntry.getValue() < 2) {
+                higherLevel.add(cardEntry.getKey());
+            } else if (cardEntry.getValue() >= 4) {
+                lowerLevel.add(cardEntry.getKey());
+            }
+        }
+
+        databaseHelper.updateCardsLevel(higherLevel, lowerLevel);
+
+    }
+
+    private void hideProgressElements() {
         ConstraintLayout constraintLayout = findViewById(R.id.constraintLayout2);
         LinearLayout linearLayout = findViewById(R.id.buttonsContainer);
         constraintLayout.setVisibility(View.GONE);
         linearLayout.setVisibility(View.GONE);
         card.setVisibility(View.GONE);
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
+        if (rememberedWords.size() != 0) {
+            getMenuInflater().inflate(R.menu.menu, menu);
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_item1:
-                // Perform action for Option 1
+            case R.id.delete_card:
+                rememberedWords.remove(currentCard[0]);
+                forgotWords.remove(currentCard[0]);
+                if (rememberedWords.size() == 0) {
+                    hideProgressElements();
+                    TextView desc = findViewById(R.id.description);
+                    desc.setText("For now all cards are repeated. Add new words or wait for the next repetition");
+                    desc.setVisibility(View.VISIBLE);
+                } else if (rememberedWords.size() >= progressBar.getMax()) {
+                    hideProgressElements();
+                    handleStudyingResults();
+                }
+                databaseHelper.removeCardById(currentCard[0].getId());
+                progressBar.setMax(rememberedWords.size());
                 return true;
-            case R.id.menu_item2:
-                // Perform action for Option 2
-                return true;
-            case R.id.menu_item3:
-                // Perform action for Option 3
+            case R.id.edit_card:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void setRandomCard() {
+        Random random = new Random();
+        boolean notAllWordsRecalled = rememberedWords.values().stream().anyMatch(value -> value);
+        while (notAllWordsRecalled) {
+            Card recallCard = cards.get(Math.abs(random.nextInt()) % cards.size());
+            if (!rememberedWords.get(recallCard)) {
+                forgotWords.put(currentCard[0], forgotWords.get(currentCard[0]) + 1);
+                currentCard[0] = recallCard;
+                textViewFront.setText(recallCard.getText());
+                textViewBack.setText(recallCard.getTranslation());
+                return;
+            }
         }
     }
 
