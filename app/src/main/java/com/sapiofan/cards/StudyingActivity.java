@@ -200,12 +200,15 @@ public class StudyingActivity extends AppCompatActivity {
                     TextView desc = findViewById(R.id.description);
                     desc.setText("For now all cards are repeated. Add new words or wait for the next repetition");
                     desc.setVisibility(View.VISIBLE);
-                } else if (rememberedWords.size() >= progressBar.getMax()) {
+                } else if (rememberedWords.values().stream().filter(value -> value).count() >= progressBar.getMax()) {
                     hideProgressElements();
                     handleStudyingResults();
                 }
                 databaseHelper.removeCardById(currentCard[0].getId());
                 progressBar.setMax(rememberedWords.size());
+                totalCountTextView.setText(String.valueOf(rememberedWords.size()));
+                cards.remove(currentCard[0]);
+                setRandomCard();
                 return true;
             case R.id.edit_card:
                 return true;
@@ -216,11 +219,10 @@ public class StudyingActivity extends AppCompatActivity {
 
     private void setRandomCard() {
         Random random = new Random();
-        boolean notAllWordsRecalled = rememberedWords.values().stream().anyMatch(value -> value);
+        boolean notAllWordsRecalled = rememberedWords.values().stream().anyMatch(value -> !value);
         while (notAllWordsRecalled) {
             Card recallCard = cards.get(Math.abs(random.nextInt()) % cards.size());
             if (!rememberedWords.get(recallCard)) {
-                forgotWords.put(currentCard[0], forgotWords.get(currentCard[0]) + 1);
                 currentCard[0] = recallCard;
                 textViewFront.setText(recallCard.getText());
                 textViewBack.setText(recallCard.getTranslation());

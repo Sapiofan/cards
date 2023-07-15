@@ -251,7 +251,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int id = cursor.getInt(cursor.getColumnIndex("id"));
                 int level = cursor.getInt(cursor.getColumnIndex("level"));
 
-                // Create and add the object to the list
                 cards.add(new Card(id, text, translation, repetition, level, currentFolderId));
             } while (cursor.moveToNext());
         }
@@ -308,7 +307,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Card> getAllVisibleCards() {
         List<Card> cards = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + CARDS + " INNER JOIN collections " +
+        String selectQuery = "SELECT cards.*, collections.id AS collection_id FROM " + CARDS + " INNER JOIN collections " +
                 "ON collections.id = cards.collection " +
                 "WHERE collections.in_study = 1 AND cards.date >= " + new Date().getTime();
         Cursor cursor = db.rawQuery(selectQuery, null);

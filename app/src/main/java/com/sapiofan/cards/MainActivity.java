@@ -316,6 +316,7 @@ public class MainActivity extends AppCompatActivity implements CollectionAdapter
                 emptyTextView.setVisibility(View.GONE);
                 text1.setText("");
                 text2.setText("");
+                switchButton.setChecked(false);
                 modalDialog.dismiss();
             }
         });
