@@ -11,6 +11,7 @@ import com.sapiofan.cards.entities.CardWord;
 import com.sapiofan.cards.entities.Collection;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -193,8 +194,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String insertQuery = "INSERT INTO " + CARDS + " (text, translation, date, level, collection) " +
-                "VALUES ('" + text + "', '" + translation + "', '" + dateFormat.format(new Date()) +
-                "', " + 1 + ", " + parent + ")";
+                "VALUES ('" + text + "', '" + translation + "', '" + dateFormat.format(Date.from(Instant.now())) +
+                "', " + 0 + ", " + parent + ")";
         db.execSQL(insertQuery);
         db.close();
 
@@ -307,9 +308,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Card> getAllVisibleCards() {
         List<Card> cards = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String currentDate = dateFormat.format(new Date());
         String selectQuery = "SELECT cards.*, collections.id AS collection_id FROM " + CARDS + " INNER JOIN collections " +
                 "ON collections.id = cards.collection " +
-                "WHERE collections.in_study = 1 AND cards.date >= " + new Date().getTime();
+                "WHERE collections.in_study = 1 AND datetime(cards.date) <= datetime('" + currentDate + "')";
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -339,7 +342,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     System.out.println(card.getLastPeriod());
                     int lastPeriod = card.getLastPeriod() + 1 >= Period.values().length ? Period.values().length - 1
                             : card.getLastPeriod() + 1;
-                    long date = new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L;
+                    long date = Date.from(Instant.now()).getTime() + Period.values()[lastPeriod].getSeconds() * 1000L;
                     String query = "UPDATE " + CARDS +
                             " SET level = '" + lastPeriod +
                             "', date = " + date +
