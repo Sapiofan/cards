@@ -311,7 +311,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "ON collections.id = cards.collection " +
                 "WHERE collections.in_study = 1 AND cards.date >= " + new Date().getTime();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 String text = cursor.getString(cursor.getColumnIndex("text"));
                 String translation = cursor.getString(cursor.getColumnIndex("translation"));
@@ -330,14 +330,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void updateCardsLevel(List<Card> higherLevel, List<Card> lowerLevel) {
         SQLiteDatabase db = this.getWritableDatabase();
-//        for (Card card : higherLevel) {
-//            int lastPeriod = card.getLastPeriod() + 1 >= Period.values().length ? Period.values().length - 1
-//                    : card.getLastPeriod() + 1;
-//            String query = "UPDATE " + CARDS + " SET level = '" + (lastPeriod) + "', date = "
-//                    + (new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L) +
-//                    " WHERE id = " + card.getId();
-//            db.execSQL(query);
-//        }
         if(higherLevel.size() != 0) {
             try {
                 db.beginTransaction();
@@ -380,32 +372,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         }
+    }
 
-//        for (Card card : lowerLevel) {
-//            int lastPeriod = Math.max(card.getLastPeriod() - 1, 0);
-//            String query = "UPDATE " + CARDS + " SET level = '" + (lastPeriod) + "', date = "
-//                    + (new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L) +
-//                    " WHERE id = " + card.getId();
-//            db.execSQL(query);
-//        }
+    public List<Collection> getCollectionsForCards() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Collection> collections = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + COLLECTIONS + " WHERE for_cards = 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                String name = cursor.getString(cursor.getColumnIndex("name"));
+                int parent_id = cursor.getInt(cursor.getColumnIndex("parent"));
+                boolean in_study = cursor.getInt(cursor.getColumnIndex("in_study")) == 1;
+                boolean for_cards = cursor.getInt(cursor.getColumnIndex("for_cards")) == 1;
 
-//        queryBuilder = new StringBuilder("UPDATE ").append(CARDS).append(" SET ");
-//
-//        for (Card card : lowerLevel) {
-//            int lastPeriod = Math.max(card.getLastPeriod() - 1, 0);
-//
-//            // Append the SET clause for each card
-//            queryBuilder.append("id = ").append(card.getId()).append(", ")
-//                    .append("level = CASE WHEN id = ").append(card.getId()).append(" THEN ")
-//                    .append(lastPeriod).append(" ELSE level END, ")
-//                    .append("date = CASE WHEN id = ").append(card.getId()).append(" THEN ")
-//                    .append(new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L)
-//                    .append(" ELSE date END, ");
-//        }
-//
-//        queryBuilder.setLength(queryBuilder.length() - 2);
-//
-//        query = queryBuilder.toString();
-//        db.execSQL(query);
+                // Create and add the object to the list
+                collections.add(new Collection(id, name, in_study, parent_id, for_cards));
+            } while (cursor.moveToNext());
+        }
+
+        return collections;
+    }
+
+    public List<Collection> getAllCollections() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Collection> collections = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + COLLECTIONS;
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                String name = cursor.getString(cursor.getColumnIndex("name"));
+                int parent_id = cursor.getInt(cursor.getColumnIndex("parent"));
+                boolean in_study = cursor.getInt(cursor.getColumnIndex("in_study")) == 1;
+                boolean for_cards = cursor.getInt(cursor.getColumnIndex("for_cards")) == 1;
+
+                // Create and add the object to the list
+                collections.add(new Collection(id, name, in_study, parent_id, for_cards));
+            } while (cursor.moveToNext());
+        }
+
+        return collections;
     }
 }

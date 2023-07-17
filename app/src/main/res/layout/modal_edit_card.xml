@@ -1,0 +1,50 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/collection_add_dialog"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/edit_card_text1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Front text"
+        android:textSize="22sp"
+        android:background="@drawable/collection_edit"
+        android:textColor="@color/cards_white"
+        android:textColorHint="@color/cards_white"
+        android:minHeight="48dp" />
+
+    <EditText
+        android:id="@+id/edit_card_text2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/edit_card_text1"
+        android:hint="Back text"
+        android:textSize="22sp"
+        android:background="@drawable/collection_edit"
+        android:textColor="@color/cards_white"
+        android:textColorHint="@color/cards_white"
+        android:layout_marginTop="20dp"
+        android:minHeight="48dp" />
+
+    <Spinner
+        android:id="@+id/collectionsSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/edit_card_text2"
+        android:backgroundTint="@color/cards_white"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        android:id="@+id/saveCardButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/collectionsSpinner"
+        android:background="@drawable/add_card_button"
+        android:textColor="@color/cards_white"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"
+        android:text="Save" />
+</RelativeLayout>

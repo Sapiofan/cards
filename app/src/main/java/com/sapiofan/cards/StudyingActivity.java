@@ -3,7 +3,9 @@ package com.sapiofan.cards;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,11 +14,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,14 +35,18 @@ import com.sapiofan.cards.adapters.CardAdapter;
 import com.sapiofan.cards.adapters.CardItemDecoration;
 import com.sapiofan.cards.entities.Card;
 import com.sapiofan.cards.entities.CardWord;
+import com.sapiofan.cards.entities.Collection;
 import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class StudyingActivity extends AppCompatActivity {
     private ProgressBar progressBar;
@@ -53,6 +63,8 @@ public class StudyingActivity extends AppCompatActivity {
     private final Map<Card, Boolean> rememberedWords = new HashMap<>();
     private final Map<Card, Integer> forgotWords = new HashMap<>();
     private List<Card> cards;
+    private List<Collection> collectionsForCards;
+    private Map<Collection, String> paths;
     private Card[] currentCard = new Card[1];
 
     private final DatabaseHelper databaseHelper = new DatabaseHelper(this);
@@ -211,10 +223,73 @@ public class StudyingActivity extends AppCompatActivity {
                 setRandomCard();
                 return true;
             case R.id.edit_card:
+                Dialog modalDialog = new Dialog(this);
+                modalDialog.show();
+                modalDialog.setContentView(R.layout.modal_edit_card);
+                modalDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                EditText text1 = modalDialog.findViewById(R.id.edit_card_text1);
+                EditText text2 = modalDialog.findViewById(R.id.edit_card_text2);
+                Button saveButton = modalDialog.findViewById(R.id.saveCardButton);
+
+                text1.setText(currentCard[0].getText());
+                text2.setText(currentCard[0].getTranslation());
+
+                collectionsForCards = databaseHelper.getAllCollections();
+                List<String> collectionNames = convertCollectionsToString(collectionsForCards);
+                Spinner spinner = modalDialog.findViewById(R.id.collectionsSpinner);
+                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this,
+                        R.layout.spinner_item, collectionNames);
+                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner.setAdapter(spinnerAdapter);
+                final String[] selected = {buildPath(collectionsForCards,
+                        collectionsForCards.stream()
+                                .filter(collection -> collection.getId() == currentCard[0].getCollection_id())
+                                .collect(Collectors.toList()).get(0), new StringBuilder())};
+                spinner.setSelection(collectionNames.indexOf(selected[0]), true);
+
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        selected[0] = parent.getItemAtPosition(position).toString();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
+
+                saveButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int parent_id = getParentIdByPath(selected[0]);
+                        databaseHelper.updateCard(currentCard[0].getId(), text1.getText().toString(),
+                                text2.getText().toString(), parent_id);
+                        int progress = forgotWords.get(currentCard[0]);
+                        rememberedWords.remove(currentCard[0]);
+                        forgotWords.remove(currentCard[0]);
+                        cards.remove(currentCard[0]);
+                        Card card = new Card(currentCard[0].getId(), text1.getText().toString(),
+                                text2.getText().toString(), currentCard[0].getNextRepetition(),
+                                currentCard[0].getLastPeriod(), parent_id);
+                        rememberedWords.put(card, false);
+                        forgotWords.put(card, progress);
+                        cards.add(card);
+                        textViewFront.setText(text1.getText());
+                        textViewBack.setText(text2.getText());
+                        modalDialog.dismiss();
+                    }
+                });
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private int getParentIdByPath(String path) {
+        return paths.entrySet().stream()
+                .filter(collectionStringEntry -> collectionStringEntry.getValue().equals(path))
+                .findFirst().map(collectionStringEntry -> collectionStringEntry.getKey().getId())
+                .orElse(0);
     }
 
     private void setRandomCard() {
@@ -264,5 +339,39 @@ public class StudyingActivity extends AppCompatActivity {
     public void footerSettingsButtonClicked(View view) {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
+    }
+
+    private List<String> convertCollectionsToString(List<Collection> collections) {
+        List<String> list = new ArrayList<>();
+        paths = new HashMap<>();
+        for (Collection collection : collections) {
+            if (collection.isForCards()) {
+                String s = buildPath(collections, collection, new StringBuilder());
+                paths.put(collection, s);
+                list.add(s);
+            }
+        }
+        return list;
+    }
+
+    private String buildPath(List<Collection> collections, Collection collection, StringBuilder stringBuilder) {
+        if(stringBuilder.length() == 0) {
+            return buildPath(collections, collection, stringBuilder.append(collection.getName()));
+        }
+
+        if(collection.getParent() != 0) {
+            Collection parent = collections.stream()
+                    .filter(collection1 -> collection1.getId() == collection.getParent())
+                    .collect(Collectors.toList()).get(0);
+            return buildPath(collections, parent, stringBuilder.append(".").append(parent.getName()));
+        }
+
+        stringBuilder.append(".").append("root");
+
+        String[] dividedPath = stringBuilder.toString().split("\\.");
+
+        Collections.reverse(Arrays.asList(dividedPath));
+
+        return String.join(".", dividedPath);
     }
 }
