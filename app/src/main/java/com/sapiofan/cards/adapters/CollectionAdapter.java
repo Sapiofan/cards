@@ -126,7 +126,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                             collection.setSelected(!collection.isSelected());
                             itemView.setSelected(collection.isSelected());
                             if (!collection.isSelected()) {
-                                if (selectionModeChangeListener != null) {
+                                if (selectionModeChangeListener != null && getSelectedCollections().size() == 0) {
                                     selectionModeChangeListener.onSelectionModeChanged(false);
                                 }
                             }

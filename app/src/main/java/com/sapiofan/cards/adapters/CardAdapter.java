@@ -65,6 +65,8 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
             holder.textViewFront.setVisibility(View.VISIBLE);
             holder.textViewBack.setVisibility(View.GONE);
         }
+
+        holder.itemView.setSelected(card.isSelected());
     }
 
     @Override
@@ -166,7 +168,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                         card.setSelected(!card.isSelected());
                         itemView.setSelected(card.isSelected());
                         if (!card.isSelected()) {
-                            if (selectionModeChangeListener != null) {
+                            if (selectionModeChangeListener != null && getSelectedCards().size() == 0) {
                                 selectionModeChangeListener.onSelectionCardModeChanged(false);
                             }
                         }
