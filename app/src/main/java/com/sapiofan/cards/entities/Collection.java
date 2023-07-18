@@ -1,5 +1,7 @@
 package com.sapiofan.cards.entities;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -91,6 +93,7 @@ public class Collection {
         return Objects.hash(id, name, parent);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Collection:\n name: " + name + "\ncards:" + cards

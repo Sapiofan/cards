@@ -3,34 +3,34 @@ package com.sapiofan.cards.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.R;
 import com.sapiofan.cards.entities.Collection;
+import com.sapiofan.cards.services.CollectionTableHandler;
 import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.CollectionViewHolder> {
     private List<Collection> collectionList;
     private OnCollectionClickListener onCollectionClickListener;
     private OnSelectionModeChangeListener selectionModeChangeListener;
-    private DatabaseHelper databaseHelper;
+    private final CollectionTableHandler collectionTableHandler;
     private int currentCollection = 0;
     private boolean selectionMode = false;
 
     public CollectionAdapter(List<Collection> collectionList, OnCollectionClickListener onCollectionClickListener,
-                             DatabaseHelper databaseHelper) {
+                             CollectionTableHandler collectionTableHandler) {
         this.collectionList = collectionList;
         this.onCollectionClickListener = onCollectionClickListener;
-        this.databaseHelper = databaseHelper;
+        this.collectionTableHandler = collectionTableHandler;
     }
 
     @NonNull
@@ -55,8 +55,8 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     }
 
     public boolean addNewCollection(String collectionName, boolean for_cards) {
-        databaseHelper.addCollection(collectionName, currentCollection, for_cards);
-        Collection collection = databaseHelper.getCollectionByName(collectionName, currentCollection);
+        collectionTableHandler.addCollection(collectionName, currentCollection, for_cards);
+        Collection collection = collectionTableHandler.getCollectionByName(collectionName, currentCollection);
         collectionList.add(collection);
 
         notifyDataSetChanged();
@@ -65,10 +65,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     }
 
     public void removeCollections(List<Collection> selectedCollections) {
-        for (Collection selectedCollection : selectedCollections) {
-            databaseHelper.removeCollection(selectedCollection.getId());
-        }
-
+        selectedCollections.stream().mapToInt(Collection::getId).forEach(collectionTableHandler::removeCollection);
         collectionList.removeAll(selectedCollections);
         notifyDataSetChanged();
     }
@@ -82,13 +79,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     }
 
     public List<Collection> getSelectedCollections() {
-        List<Collection> selectedCollections = new ArrayList<>();
-        for (Collection collection : collectionList) {
-            if (collection.isSelected()) {
-                selectedCollections.add(collection);
-            }
-        }
-        return selectedCollections;
+        return collectionList.stream().filter(Collection::isSelected).collect(Collectors.toList());
     }
 
     public int getCurrentCollection() {
@@ -118,7 +109,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
                         Collection collection = collectionList.get(position);
-                        if(!selectionMode) {
+                        if (!selectionMode) {
                             if (onCollectionClickListener != null) {
                                 onCollectionClickListener.onCollectionClick(collection);
                             }
@@ -141,14 +132,14 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
                         Collection collection = collectionList.get(position);
-                        if(collection.isInStudy()) {
+                        if (collection.isInStudy()) {
                             buttonHide.setImageResource(R.drawable.sleeping);
                             collection.setInStudy(false);
-                            databaseHelper.setCollectionVisibility(collection.getId(), false);
+                            collectionTableHandler.setCollectionVisibility(collection.getId(), false);
                         } else {
                             buttonHide.setImageResource(R.drawable.nerd);
                             collection.setInStudy(true);
-                            databaseHelper.setCollectionVisibility(collection.getId(), true);
+                            collectionTableHandler.setCollectionVisibility(collection.getId(), true);
                         }
                     }
                 }
@@ -160,7 +151,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         public void bind(Collection collection) {
             textViewName.setText(collection.getName());
             itemView.setSelected(collection.isSelected());
-            if(!collection.isInStudy()) {
+            if (!collection.isInStudy()) {
                 buttonHide.setImageResource(R.drawable.sleeping);
             } else {
                 buttonHide.setImageResource(R.drawable.nerd);
@@ -188,12 +179,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     }
 
     public boolean isAnyCollectionSelected() {
-        for (Collection collection : collectionList) {
-            if (collection.isSelected()) {
-                return true;
-            }
-        }
-        return false;
+        return collectionList.stream().anyMatch(Collection::isSelected);
     }
 
     public interface OnCollectionClickListener {

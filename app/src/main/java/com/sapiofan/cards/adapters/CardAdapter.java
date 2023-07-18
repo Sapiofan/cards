@@ -17,26 +17,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sapiofan.cards.R;
 import com.sapiofan.cards.entities.Card;
 import com.sapiofan.cards.entities.CardWord;
-import com.sapiofan.cards.entities.Collection;
+import com.sapiofan.cards.services.CardTableHandler;
 import com.sapiofan.cards.services.DatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     private List<Card> cardList;
-    private List<Card> filteredCardList;
-    private CardWord cardWord;
-    private DatabaseHelper databaseHelper;
+    private final List<Card> filteredCardList;
+    private final CardWord cardWord;
+    private final CardTableHandler cardTableHandler;
     private OnSelectionModeCardChangeListener selectionModeChangeListener;
     private int currentFolderId;
     private boolean selectionMode = false;
 
-    public CardAdapter(List<Card> cardList, CardWord cardWord, DatabaseHelper databaseHelper) {
+    public CardAdapter(List<Card> cardList, CardWord cardWord, CardTableHandler cardTableHandler) {
         this.cardList = cardList;
         this.filteredCardList = new ArrayList<>(cardList);
         this.cardWord = cardWord;
-        this.databaseHelper = databaseHelper;
+        this.cardTableHandler = cardTableHandler;
     }
 
     @NonNull
@@ -49,7 +50,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Card card = filteredCardList.get(position);
-        if(card == null) {
+        if (card == null) {
             Log.e("Empty card", "Card is null");
             return;
         }
@@ -75,17 +76,14 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     }
 
     public void addCard(String text1, String text2, boolean reverse) {
-        databaseHelper.addCard(text1, text2, currentFolderId, reverse);
-        cardList.addAll(databaseHelper.findCards(text1, text2, currentFolderId));
+        cardTableHandler.addCard(text1, text2, currentFolderId, reverse);
+        cardList.addAll(cardTableHandler.findCards(text1, text2, currentFolderId));
         filter("");
         notifyDataSetChanged();
     }
 
     public void removeCards(List<Card> selectedCards) {
-        for (Card selectedCard : selectedCards) {
-            databaseHelper.removeCardById(selectedCard.getId());
-        }
-
+        selectedCards.forEach(selectedCard -> cardTableHandler.removeCardById(selectedCard.getId()));
         cardList.removeAll(selectedCards);
         filter("");
         notifyDataSetChanged();
@@ -100,13 +98,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     }
 
     public List<Card> getSelectedCards() {
-        List<Card> selectedCards = new ArrayList<>();
-        for (Card card : filteredCardList) {
-            if (card.isSelected()) {
-                selectedCards.add(card);
-            }
-        }
-        return selectedCards;
+        return filteredCardList.stream().filter(Card::isSelected).collect(Collectors.toList());
     }
 
     public boolean isSelectionMode() {
@@ -157,7 +149,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Card card = cardList.get(position);
-                    if(!selectionMode) {
+                    if (!selectionMode) {
                         if (isFrontVisible) {
                             applyAnimation(textViewFront, textViewBack);
                         } else {
@@ -199,13 +191,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         }
 
         private boolean isAnyCardSelected() {
-//            return filteredCardList.stream().anyMatch(Card::isSelected);
-            for (Card card : filteredCardList) {
-                if (card.isSelected()) {
-                    return true;
-                }
-            }
-            return false;
+            return filteredCardList.stream().anyMatch(Card::isSelected);
         }
 
         private void applyAnimation(final View visibleView, final View invisibleView) {

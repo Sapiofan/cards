@@ -22,18 +22,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "cards.db";
-    private static final String COLLECTIONS = "collections";
-    private static final String CARDS = "cards";
-    private static final String WORDS_CHARACTERISTICS = "words";
+    protected static final String COLLECTIONS = "collections";
+    protected static final String CARDS = "cards";
+    protected static final String WORDS_CHARACTERISTICS = "words";
 
-    // Constructor
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create the table
         String createTableQuery = "CREATE TABLE IF NOT EXISTS " + COLLECTIONS +
                 " (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, parent INTEGER, in_study INTEGER, for_cards INTEGER)";
         db.execSQL(createTableQuery);
@@ -59,45 +57,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-    }
-
-    public void addCollection(String name, int parent, boolean forCards) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String insertQuery;
-        if (parent == 0) {
-            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study, for_cards) " +
-                    "VALUES ('" + name + "', NULL, 1, " + (forCards ? 1 : 0) + ")";
-        } else {
-            insertQuery = "INSERT INTO " + COLLECTIONS + " (name, parent, in_study, for_cards) " +
-                    "VALUES ('" + name + "', " + parent + ", 1, " + (forCards ? 1 : 0) + ")";
-        }
-        System.out.println(insertQuery);
-        db.execSQL(insertQuery);
-        db.close();
-    }
-
-    public Collection getCollectionByName(String name, int parent) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String selectQueryCollection = "SELECT * FROM " + COLLECTIONS + " WHERE parent" + (parent == 0 ? " IS NULL"
-                : (" = " + parent)) + " AND name = '" + name + "'";
-        System.out.println(selectQueryCollection);
-        Cursor cursor = db.rawQuery(selectQueryCollection, null);
-
-        if (cursor.moveToFirst()) {
-            System.out.println("In cursor");
-
-            boolean inStudy = cursor.getInt(cursor.getColumnIndex("in_study")) > 0;
-            int id = cursor.getInt(cursor.getColumnIndex("id"));
-            boolean isForCards = cursor.getInt(cursor.getColumnIndex("for_cards")) > 0;
-
-            cursor.close();
-            db.close();
-            return new Collection(id, name, inStudy, parent, isForCards);
-        }
-        cursor.close();
-        db.close();
-
-        return null;
     }
 
     public List<Object> getObjectsInCollection(int parent_id) {
@@ -146,123 +105,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return objects;
     }
 
-    public void removeCollection(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String getQueryCollections = "SELECT * FROM " + COLLECTIONS + " WHERE parent = " + id;
-        Cursor cursor = db.rawQuery(getQueryCollections, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                int child_collection_id = cursor.getInt(cursor.getColumnIndex("id"));
-                removeCollection(child_collection_id);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        String deleteQuery = "DELETE FROM " + CARDS + " WHERE collection = " + id;
-        db.execSQL(deleteQuery);
-        deleteQuery = "DELETE FROM " + COLLECTIONS + " WHERE id = " + id;
-        db.execSQL(deleteQuery);
-        db.close();
-    }
-
-    public void renameCollection(int id, String name) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String updateQuery = "UPDATE " + COLLECTIONS + " SET name = '" + name + "' WHERE id = " + id;
-        db.execSQL(updateQuery);
-        db.close();
-    }
-
-    public void setCollectionVisibility(int id, boolean visibility) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String updateQuery = "UPDATE " + COLLECTIONS + " SET in_study = '" + (visibility ? 1 : 0) + "' WHERE id = " + id;
-        db.execSQL(updateQuery);
-        db.close();
-    }
-
-    public void removeCardById(int card_id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String deleteQuery = "DELETE FROM " + CARDS + " WHERE id = " + card_id;
-        db.execSQL(deleteQuery);
-        db.close();
-    }
-
-    private boolean addCard(String text, String translation, int parent) {
-        if (parent <= 0) {
-            return false;
-        }
-        SQLiteDatabase db = this.getWritableDatabase();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        String insertQuery = "INSERT INTO " + CARDS + " (text, translation, date, level, collection) " +
-                "VALUES ('" + text + "', '" + translation + "', '" + dateFormat.format(Date.from(Instant.now())) +
-                "', " + 0 + ", " + parent + ")";
-        db.execSQL(insertQuery);
-        db.close();
-
-        return true;
-    }
-
-    public boolean addCard(String text, String translation, int parent, boolean reverse) {
-        if (reverse) {
-            return addCard(text, translation, parent) && addCard(translation, text, parent);
-        }
-        return addCard(text, translation, parent);
-    }
-
-    public void updateCard(int id, String text, String translation, int parent) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String updateQuery = "UPDATE " + CARDS + " SET text = '" + text + "', translation = '" + translation + "'" +
-                ", collection = " + parent + " WHERE id = " + id;
-        db.execSQL(updateQuery);
-        db.close();
-    }
-
-    public Card getCard(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + CARDS + " WHERE id = " + id;
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        if (cursor != null)
-            cursor.moveToFirst();
-
-        String text = cursor.getString(cursor.getColumnIndex("text"));
-        String translation = cursor.getString(cursor.getColumnIndex("translation"));
-        Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
-        int level = cursor.getInt(cursor.getColumnIndex("level"));
-        int collection = cursor.getInt(cursor.getColumnIndex("collection"));
-
-        cursor.close();
-        db.close();
-
-        return new Card(id, text, translation, repetition, level, collection);
-    }
-
-    public List<Card> findCards(String text1, String text2, int currentFolderId) {
-        List<Card> cards = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + CARDS + " WHERE collection = " + currentFolderId + " and " +
-                "((text = '" + text1 + "' and translation = '" + text2 + "')" +
-                " or (text = '"+ text2 + "' and translation = '" + text1 + "'))";
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            do {
-                String text = cursor.getString(cursor.getColumnIndex("text"));
-                String translation = cursor.getString(cursor.getColumnIndex("translation"));
-                Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
-                int level = cursor.getInt(cursor.getColumnIndex("level"));
-
-                cards.add(new Card(id, text, translation, repetition, level, currentFolderId));
-            } while (cursor.moveToNext());
-        }
-
-        return cards;
-    }
-
-    public void moveObjectsToOtherCollection(List<Integer> ids) {
-
-    }
-
     public CardWord getWordsSize() {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + WORDS_CHARACTERISTICS + " WHERE preference_key = 'size'";
@@ -282,140 +124,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String query = "UPDATE " + WORDS_CHARACTERISTICS + " SET preference_value = '" + cardWord.getSize() +
                 "' WHERE preference_key = 'size'";
         db.execSQL(query);
-    }
-
-    public Collection getParentByChildId(int currentCollection) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + COLLECTIONS + " WHERE id = " + currentCollection;
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getInt(cursor.getColumnIndex("parent"));
-            selectQuery = "SELECT * FROM " + COLLECTIONS + " where id = " + id;
-            cursor = db.rawQuery(selectQuery, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                String name = cursor.getString(cursor.getColumnIndex("name"));
-                int parent_id = cursor.getInt(cursor.getColumnIndex("parent"));
-                boolean in_study = cursor.getInt(cursor.getColumnIndex("in_study")) == 1;
-                boolean for_cards = cursor.getInt(cursor.getColumnIndex("for_cards")) == 1;
-                return new Collection(id, name, in_study, parent_id, for_cards);
-            }
-        }
-
-        return null;
-    }
-
-    public List<Card> getAllVisibleCards() {
-        List<Card> cards = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        String currentDate = dateFormat.format(new Date());
-        String selectQuery = "SELECT cards.*, collections.id AS collection_id FROM " + CARDS + " INNER JOIN collections " +
-                "ON collections.id = cards.collection " +
-                "WHERE collections.in_study = 1 AND datetime(cards.date) <= datetime('" + currentDate + "')";
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                String text = cursor.getString(cursor.getColumnIndex("text"));
-                String translation = cursor.getString(cursor.getColumnIndex("translation"));
-                Date repetition = new Date(cursor.getLong(cursor.getColumnIndex("date")));
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
-                int level = cursor.getInt(cursor.getColumnIndex("level"));
-                int folderId = cursor.getInt(cursor.getColumnIndex("collection"));
-
-                // Create and add the object to the list
-                cards.add(new Card(id, text, translation, repetition, level, folderId));
-            } while (cursor.moveToNext());
-        }
-
-        return cards;
-    }
-
-    public void updateCardsLevel(List<Card> higherLevel, List<Card> lowerLevel) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        if(higherLevel.size() != 0) {
-            try {
-                db.beginTransaction();
-
-                for (Card card : higherLevel) {
-                    System.out.println(card.getText());
-                    System.out.println(card.getLastPeriod());
-                    int lastPeriod = card.getLastPeriod() + 1 >= Period.values().length ? Period.values().length - 1
-                            : card.getLastPeriod() + 1;
-                    long date = Date.from(Instant.now()).getTime() + Period.values()[lastPeriod].getSeconds() * 1000L;
-                    String query = "UPDATE " + CARDS +
-                            " SET level = '" + lastPeriod +
-                            "', date = " + date +
-                            " WHERE id = " + card.getId();
-                    db.execSQL(query);
-                    card.setLastPeriod(lastPeriod);
-                    card.setNextRepetition(new Date(date));
-                }
-
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-        if(lowerLevel.size() != 0) {
-            try {
-                db.beginTransaction();
-                for (Card card : lowerLevel) {
-                    int lastPeriod = Math.max(card.getLastPeriod() - 1, 0);
-                    long date = new Date().getTime() + Period.values()[lastPeriod].getSeconds() * 1000L;
-                    String query = "UPDATE " + CARDS + " SET level = '" + (lastPeriod) + "', date = "
-                            + date +
-                            " WHERE id = " + card.getId();
-                    db.execSQL(query);
-                    card.setLastPeriod(lastPeriod);
-                    card.setNextRepetition(new Date(date));
-                }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-    }
-
-    public List<Collection> getCollectionsForCards() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        List<Collection> collections = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + COLLECTIONS + " WHERE for_cards = 1";
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
-                String name = cursor.getString(cursor.getColumnIndex("name"));
-                int parent_id = cursor.getInt(cursor.getColumnIndex("parent"));
-                boolean in_study = cursor.getInt(cursor.getColumnIndex("in_study")) == 1;
-                boolean for_cards = cursor.getInt(cursor.getColumnIndex("for_cards")) == 1;
-
-                // Create and add the object to the list
-                collections.add(new Collection(id, name, in_study, parent_id, for_cards));
-            } while (cursor.moveToNext());
-        }
-
-        return collections;
-    }
-
-    public List<Collection> getAllCollections() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        List<Collection> collections = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + COLLECTIONS;
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
-                String name = cursor.getString(cursor.getColumnIndex("name"));
-                int parent_id = cursor.getInt(cursor.getColumnIndex("parent"));
-                boolean in_study = cursor.getInt(cursor.getColumnIndex("in_study")) == 1;
-                boolean for_cards = cursor.getInt(cursor.getColumnIndex("for_cards")) == 1;
-
-                // Create and add the object to the list
-                collections.add(new Collection(id, name, in_study, parent_id, for_cards));
-            } while (cursor.moveToNext());
-        }
-
-        return collections;
     }
 }

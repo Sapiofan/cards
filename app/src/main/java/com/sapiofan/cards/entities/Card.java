@@ -1,5 +1,7 @@
 package com.sapiofan.cards.entities;
 
+import androidx.annotation.NonNull;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -8,7 +10,7 @@ public class Card {
     private String text;
     private String translation;
     private Date nextRepetition;
-    private int lastPeriod = 0;
+    private int lastPeriod;
     private int collection_id;
     private boolean isSelected = false;
 
@@ -101,6 +103,7 @@ public class Card {
         return Objects.hash(id, text, translation, collection_id);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Card:\ntext: " + text + "\ntranslation: " + translation + "\nnext repetition: " + nextRepetition

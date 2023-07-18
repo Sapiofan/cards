@@ -11,14 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sapiofan.cards.R;
-import com.sapiofan.cards.SettingsActivity;
 import com.sapiofan.cards.SizeActivity;
-import com.sapiofan.cards.StudyingActivity;
 
 import java.util.List;
 
 public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ButtonViewHolder> {
-    private List<String> settingsList;
+    private final List<String> settingsList;
 
     public SettingsAdapter(List<String> settingsList) {
         this.settingsList = settingsList;
